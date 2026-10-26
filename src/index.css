@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   BOLDDEE RENTALS - Luxury Emerald Forest Green & Radiant Gold Brand Identity
+   Tagline: "We Make Your Moments Worthwhile."
+   ========================================================================== */
+
+:root {
+  --font-primary: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+
+  /* BOLDDEE Brand Colors */
+  --bg-dark: #051a10;
+  --bg-card: #0c271a;
+  --bg-card-hover: #123826;
+  --bg-surface: #082115;
+  --bg-glass: rgba(12, 39, 26, 0.88);
+
+  /* Primary: Emerald Forest Green */
+  --emerald-primary: #0a4d2c;
+  --emerald-light: #166534;
+  --emerald-bright: #22c55e;
+  --emerald-glow: rgba(34, 197, 94, 0.25);
+
+  /* Secondary / Accent: Radiant Sun Gold */
+  --gold-primary: #f5b318;
+  --gold-light: #fcd34d;
+  --gold-dark: #d97706;
+  --gold-glow: rgba(245, 179, 24, 0.35);
+
+  /* Text & Surfaces */
+  --text-primary: #ffffff;
+  --text-secondary: #c7d2cb;
+  --text-muted: #8aa194;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-emerald: rgba(34, 197, 94, 0.3);
+  --border-gold: rgba(245, 179, 24, 0.4);
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Gradients */
+  --gradient-hero: linear-gradient(180deg, #06311d 0%, #03180e 100%);
+  --gradient-card: linear-gradient(145deg, rgba(14, 46, 31, 0.95), rgba(7, 26, 17, 0.9));
+  --gradient-gold: linear-gradient(135deg, #f5b318 0%, #eab308 50%, #ca8a04 100%);
+  --gradient-emerald: linear-gradient(135deg, #15803d 0%, #166534 100%);
+
+  --shadow-elegant: 0 12px 36px -10px rgba(0, 0, 0, 0.65), 0 0 20px rgba(10, 77, 44, 0.2);
+  --shadow-glow: 0 0 35px rgba(245, 179, 24, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+/* Gradients & Backgrounds */
+.gradient-hero {
+  background: var(--gradient-hero);
+}
+
+.gradient-gold {
+  background: var(--gradient-gold);
+}
+
+.gradient-emerald {
+  background: var(--gradient-emerald);
+}
+
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.shadow-elegant {
+  box-shadow: var(--shadow-elegant);
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Gradient Text Utilities */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #ffffff 0%, #fde68a 35%, #f5b318 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.emerald-gradient-text {
+  background: linear-gradient(135deg, #ffffff 0%, #86efac 50%, #22c55e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Buttons */
+.btn-primary, .btn-gold {
+  background: var(--gradient-gold);
+  color: #051a10;
+  font-weight: 800;
+  padding: 0.75rem 1.6rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+  font-family: var(--font-heading);
+  letter-spacing: 0.03em;
+  font-size: 0.925rem;
+}
+
+.btn-primary:hover, .btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--gold-glow);
+  filter: brightness(1.08);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 0.75rem 1.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+  font-family: var(--font-heading);
+  font-size: 0.925rem;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.btn-emerald {
+  background: var(--gradient-emerald);
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.75rem 1.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-emerald);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+}
+
+.btn-emerald:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--emerald-glow);
+  background: #166534;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 14, 9, 0.88);
+  backdrop-filter: blur(14px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  max-width: 820px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: #0f3d26;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

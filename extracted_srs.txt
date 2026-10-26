@@ -1,0 +1,4339 @@
+SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
+
+BOLDDEE RENTALS WEB APPLICATION
+
+Tagline
+
+We Make Your Moments Worthwhile.
+
+Document Version
+
+Version 1.0
+
+Document Status
+
+Proposed / Product Requirements Baseline
+
+Prepared For
+
+BOLDDEE RENTALS
+
+Founders
+
+Bold-Services & Bull-Dee
+
+1. INTRODUCTION
+
+1.1 Purpose
+
+This Software Requirements Specification defines the complete functional, technical, operational, security, and business requirements for the BOLDDEE RENTALS Web Application.
+
+The system will provide a centralized digital platform through which customers can:
+
+Browse graduation and event products
+
+Purchase personalized graduation items
+
+Rent event equipment
+
+Book tents, chairs, tables and related services
+
+Request photography and videography services
+
+Request event decoration
+
+Create customized graduation/class orders
+
+Request quotations for large events
+
+Make online payments
+
+Schedule delivery or pickup
+
+Track orders and rental bookings
+
+Receive notifications
+
+Review completed services
+
+Administrators and authorized staff will use a secure backend to:
+
+Manage products
+
+Manage rental inventory
+
+Manage customers
+
+Process orders
+
+Approve customized designs
+
+Manage bookings
+
+Manage payments
+
+Manage deliveries
+
+Manage vendors/service partners
+
+Manage graduation campaigns
+
+Manage pricing
+
+Manage promotional offers
+
+Monitor business performance
+
+Generate reports
+
+Manage website content
+
+The application should initially position BOLDDEE RENTALS as a graduation-focused event services company, while the underlying architecture must allow the company to expand into the broader event-rental market.
+
+2. BUSINESS VISION
+
+2.1 Vision Statement
+
+To become a trusted Ghanaian digital platform for graduation celebrations and event rentals by giving customers one convenient place to obtain products, equipment, services, and event support.
+
+2.2 Brand Promise
+
+BOLDDEE RENTALS
+
+We Make Your Moments Worthwhile.
+
+2.3 Business Concept
+
+The platform will operate around four primary commercial areas:
+
+A. BOLDDEE GRAD
+
+Graduation products and packages.
+
+B. BOLDDEE RENTALS
+
+Tents, chairs, tables, lighting, sound equipment, décor structures, and other event equipment.
+
+C. BOLDDEE MOMENTS
+
+Photography, videography, photo booths and memory services.
+
+D. BOLDDEE EVENTS
+
+Event setup, decoration, coordination, catering partnerships and other event services.
+
+3. PROBLEM STATEMENT
+
+Graduating students and event organizers typically have to contact several vendors separately.
+
+A graduate may need to find:
+
+A sash vendor
+
+A medal supplier
+
+A photographer
+
+A tent provider
+
+A chair/table provider
+
+A decorator
+
+A sound provider
+
+A gift provider
+
+This creates several problems:
+
+Fragmented purchasing
+
+Unclear pricing
+
+Difficulty comparing services
+
+Manual communication
+
+Poor booking coordination
+
+Payment uncertainty
+
+Difficulty tracking orders
+
+Lack of centralized customer records
+
+Increased risk of missed delivery dates
+
+Limited visibility for the business owner
+
+BOLDDEE RENTALS intends to solve this by providing a unified digital platform.
+
+4. OBJECTIVES
+
+4.1 Primary Objectives
+
+The system shall:
+
+Digitize BOLDDEE RENTALS sales and rental operations.
+
+Provide a simple customer ordering experience.
+
+Support personalized graduation products.
+
+Support equipment rental reservations.
+
+Support event-service bookings.
+
+Accept digital payments.
+
+Manage deliveries and pickups.
+
+Prevent double-booking of rental inventory.
+
+Provide centralized business management.
+
+Provide real-time operational visibility.
+
+Build a customer database.
+
+Generate sales and operational reports.
+
+4.2 Secondary Objectives
+
+The system should also:
+
+Improve customer response time.
+
+Reduce order-processing errors.
+
+Reduce manual record keeping.
+
+Increase repeat purchases.
+
+Support social-media-driven sales.
+
+Enable campus ambassador campaigns.
+
+Support bulk graduation orders.
+
+Create a foundation for future marketplace functionality.
+
+5. SCOPE
+
+5.1 In Scope
+
+Customer-facing functionality
+
+Account creation
+
+Login
+
+Product browsing
+
+Product search
+
+Product filtering
+
+Product customization
+
+Shopping cart
+
+Checkout
+
+Rental booking
+
+Service booking
+
+Quote requests
+
+Online payments
+
+Order tracking
+
+Booking tracking
+
+Notifications
+
+Reviews
+
+Customer profile
+
+Address management
+
+Order history
+
+Wishlist/favorites
+
+Promo codes
+
+Graduation packages
+
+Administration
+
+Dashboard
+
+Product management
+
+Category management
+
+Rental inventory management
+
+Availability management
+
+Booking management
+
+Order management
+
+Customer management
+
+Payment management
+
+Delivery management
+
+Discount management
+
+Vendor management
+
+Campaign management
+
+Content management
+
+Reporting
+
+User and role management
+
+Audit logs
+
+Future-ready functionality
+
+Campus ambassador management
+
+Referral commissions
+
+Vendor marketplace
+
+Multi-vendor support
+
+Subscription services
+
+Mobile application
+
+Loyalty program
+
+6. OUT OF SCOPE FOR INITIAL MVP
+
+The following should not be mandatory in the first release:
+
+Native Android/iOS application
+
+Full multi-vendor marketplace
+
+Advanced AI event planning
+
+International shipping
+
+Cryptocurrency payments
+
+Complex accounting ERP integration
+
+Automated tax filing
+
+Fully automated logistics fleet management
+
+These may be introduced in later phases.
+
+7. TARGET USERS
+
+7.1 Customer
+
+A person buying or renting products/services from BOLDDEE RENTALS.
+
+Typical examples:
+
+Final-year university student
+
+Parent
+
+Friend
+
+Class representative
+
+Event organizer
+
+Church
+
+Corporate customer
+
+7.2 Bulk/Institutional Customer
+
+A customer placing a large order on behalf of:
+
+Class
+
+Department
+
+Association
+
+Hall
+
+Organization
+
+Company
+
+7.3 Admin
+
+Full system manager.
+
+7.4 Operations Staff
+
+Handles:
+
+Orders
+
+Inventory
+
+Bookings
+
+Delivery
+
+Returns
+
+Equipment inspections
+
+7.5 Sales/Customer Service Staff
+
+Handles:
+
+Customer inquiries
+
+Quote requests
+
+Follow-ups
+
+Orders
+
+Complaints
+
+7.6 Finance Staff
+
+Handles:
+
+Payments
+
+Refunds
+
+Reconciliation
+
+Revenue records
+
+Payment reports
+
+7.7 Photographer/Vendor/Partner
+
+An external service provider working with BOLDDEE RENTALS.
+
+7.8 Super Administrator
+
+Controls:
+
+Roles
+
+Permissions
+
+System configuration
+
+Security settings
+
+Business settings
+
+8. ROLE AND PERMISSION MODEL
+
+The system shall implement Role-Based Access Control (RBAC).
+
+Role
+
+Access
+
+Super Admin
+
+Full system access
+
+Admin
+
+Most business functions
+
+Operations Manager
+
+Orders, bookings, inventory, delivery
+
+Sales Officer
+
+Customers, quotes, orders
+
+Finance Officer
+
+Payments, refunds, finance reports
+
+Inventory Officer
+
+Rental stock and maintenance
+
+Content Manager
+
+Website content
+
+Vendor/Partner
+
+Assigned service jobs
+
+Customer
+
+Own account/orders/bookings
+
+Permissions should be granular.
+
+For example:
+
+A Finance Officer may be allowed to view payments but not delete products.
+
+9. CUSTOMER JOURNEY
+
+The intended customer journey is:
+
+Stage 1
+
+Customer discovers BOLDDEE.
+
+Stage 2
+
+Customer browses services/products.
+
+Stage 3
+
+Customer selects:
+
+Product
+
+Rental
+
+Package
+
+Event service
+
+Stage 4
+
+Customer enters:
+
+Name
+
+Date
+
+Location
+
+Quantity
+
+Customization
+
+Stage 5
+
+System calculates price.
+
+Stage 6
+
+Customer confirms order.
+
+Stage 7
+
+Customer pays deposit or full amount.
+
+Stage 8
+
+System creates order/booking.
+
+Stage 9
+
+Operations team processes request.
+
+Stage 10
+
+Customer receives notifications.
+
+Stage 11
+
+Order is delivered/service completed.
+
+Stage 12
+
+Customer confirms completion.
+
+Stage 13
+
+Customer reviews service.
+
+10. FUNCTIONAL REQUIREMENTS
+
+FR-001: PUBLIC WEBSITE
+
+The system shall provide a responsive public website.
+
+Required pages:
+
+Home
+
+About Us
+
+Graduation
+
+Rentals
+
+Events
+
+Photography
+
+Packages
+
+Products
+
+Promotions
+
+How It Works
+
+FAQs
+
+Contact
+
+Terms & Conditions
+
+Privacy Policy
+
+The website must work on:
+
+Desktop
+
+Tablet
+
+Mobile
+
+FR-002: HOME PAGE
+
+The home page shall display:
+
+BOLDDEE RENTALS logo
+
+Tagline
+
+Hero section
+
+Featured graduation packages
+
+Popular rentals
+
+Featured products
+
+Booking CTA
+
+Shop CTA
+
+Testimonials
+
+How the service works
+
+Featured events
+
+Social media links
+
+Contact information
+
+Primary call-to-action buttons should include:
+
+Shop Now
+
+Book a Rental
+
+Plan My Graduation
+
+Request a Quote
+
+FR-003: CUSTOMER REGISTRATION
+
+Customers shall be able to register using:
+
+Full name
+
+Email address
+
+Phone number
+
+Password
+
+Optional:
+
+University
+
+Student ID/index number
+
+Graduation year
+
+Programme
+
+The system shall validate duplicate email addresses and phone numbers where applicable.
+
+FR-004: LOGIN
+
+Customers shall be able to log in using:
+
+Email + password
+
+Future support may include:
+
+Google login
+
+OTP login
+
+Phone verification
+
+FR-005: PASSWORD MANAGEMENT
+
+Users shall be able to:
+
+Reset forgotten password
+
+Change password
+
+Receive password-reset instructions
+
+Log out of active sessions
+
+FR-006: CUSTOMER PROFILE
+
+Customers shall be able to manage:
+
+Profile information
+
+Phone number
+
+Email
+
+Addresses
+
+University
+
+Programme
+
+Graduation year
+
+Preferred contact method
+
+FR-007: PRODUCT CATALOGUE
+
+The system shall support purchasable products.
+
+Example categories:
+
+Graduation
+
+Sashes
+
+Medals
+
+Caps
+
+Stoles
+
+Cords
+
+Shirts
+
+Hoodies
+
+Gifts
+
+Mugs
+
+Plaques
+
+Frames
+
+Bouquets
+
+Gift boxes
+
+Merchandise
+
+Class shirts
+
+Department merchandise
+
+Customized souvenirs
+
+Each product shall support:
+
+Product name
+
+SKU
+
+Description
+
+Images
+
+Price
+
+Discount price
+
+Category
+
+Tags
+
+Stock quantity
+
+Minimum order quantity
+
+Customization options
+
+Status
+
+FR-008: PRODUCT CUSTOMIZATION
+
+The system shall allow customization for supported items.
+
+Examples:
+
+Sash
+
+Customer enters:
+
+Moses Nyarko
+
+Programme:
+
+HND Information and Communication Technology
+
+University:
+
+Ho Technical University
+
+Class:
+
+Class of 2026
+
+Possible options:
+
+Text color
+
+Font
+
+Embroidery/printing type
+
+Material
+
+Logo
+
+Custom message
+
+The system shall generate or store the customer's customization information.
+
+FR-009: DESIGN APPROVAL
+
+For personalized orders, the system shall support approval before production.
+
+Workflow:
+
+Order Submitted
+
+→
+
+Design Draft
+
+→
+
+Customer Review
+
+→
+
+Approved
+
+→
+
+Production
+
+The customer should be able to approve or reject the design.
+
+Production should not begin automatically for products requiring manual design approval unless the order configuration explicitly allows it.
+
+FR-010: SHOPPING CART
+
+Customers shall be able to:
+
+Add products
+
+Change quantities
+
+Remove products
+
+Edit customization
+
+View subtotal
+
+Apply coupon
+
+View estimated delivery
+
+Proceed to checkout
+
+FR-011: RENTAL CATALOGUE
+
+The system shall support rentable assets.
+
+Examples:
+
+Tents
+
+Small canopy
+
+Medium canopy
+
+Large canopy
+
+Marquee
+
+Furniture
+
+Plastic chairs
+
+Cushioned chairs
+
+Round tables
+
+Rectangular tables
+
+Cocktail tables
+
+Equipment
+
+Fans
+
+Lighting
+
+Speakers
+
+Microphones
+
+Projectors
+
+Décor
+
+Backdrops
+
+Balloon stands
+
+Signage
+
+Decorative structures
+
+Each rental asset shall contain:
+
+Asset name
+
+Asset code
+
+Category
+
+Description
+
+Images
+
+Rental price
+
+Deposit
+
+Availability
+
+Condition
+
+Quantity
+
+Location
+
+Maintenance status
+
+FR-012: RENTAL AVAILABILITY
+
+The system shall prevent rental conflicts.
+
+For example:
+
+If:
+
+20 chairs
+
+are available and a customer reserves:
+
+15 chairs
+
+the system shall show:
+
+5 available
+
+for overlapping dates, subject to operational rules.
+
+The system shall account for:
+
+Event date
+
+Delivery date
+
+Pickup date
+
+Return date
+
+Maintenance periods
+
+Existing bookings
+
+Buffer periods
+
+FR-013: RENTAL BOOKING
+
+Customers shall be able to select:
+
+Equipment
+
+Quantity
+
+Event date
+
+Setup time
+
+Pickup time
+
+Venue
+
+Event type
+
+Contact information
+
+The system shall calculate:
+
+Rental Fee + Delivery Fee + Setup Fee + Security Deposit
+
+where applicable.
+
+FR-014: EVENT TYPE
+
+Customers shall be able to choose:
+
+Graduation
+
+Wedding
+
+Birthday
+
+Funeral
+
+Church event
+
+Corporate event
+
+Party
+
+Conference
+
+Other
+
+This allows BOLDDEE to monitor the most profitable event segments.
+
+FR-015: LOCATION CAPTURE
+
+Customers shall enter:
+
+Region
+
+City/town
+
+Area
+
+Full venue/address
+
+Landmark
+
+Google Maps location where possible
+
+The system should support map pinning in a future version.
+
+FR-016: DELIVERY CALCULATION
+
+Delivery charges may be calculated according to:
+
+Customer location
+
+Distance
+
+Order size
+
+Vehicle requirements
+
+Setup requirements
+
+For the MVP, delivery zones may be manually configured.
+
+Example:
+
+Zone
+
+Delivery
+
+Zone A
+
+GH₵50
+
+Zone B
+
+GH₵100
+
+Zone C
+
+GH₵150
+
+Custom
+
+Quote
+
+FR-017: PACKAGE MANAGEMENT
+
+The system shall support bundles.
+
+Examples:
+
+Graduate Starter
+
+Sash
+
+Medal
+
+Cap
+
+Graduate Classic
+
+Sash
+
+Medal
+
+Shirt
+
+Photography
+
+Family Celebration
+
+Tent
+
+Chairs
+
+Tables
+
+Premium Graduation
+
+Sash
+
+Medal
+
+Photography
+
+Tent
+
+Chairs
+
+Tables
+
+Décor
+
+Admin shall be able to:
+
+Create packages
+
+Edit packages
+
+Add/remove components
+
+Set package price
+
+Schedule package availability
+
+Enable/disable package
+
+FR-018: QUOTATION SYSTEM
+
+Customers shall be able to request quotations for custom jobs.
+
+Examples:
+
+"We are 120 students from Computer Science and need personalized sashes, medals and shirts."
+
+The system shall capture:
+
+Customer name
+
+Organization/class
+
+Quantity
+
+Requirements
+
+Event date
+
+Budget
+
+Supporting files
+
+Contact details
+
+Admin shall be able to:
+
+Create quotation
+
+Add line items
+
+Add discount
+
+Add tax/fees where applicable
+
+Add terms
+
+Set expiry date
+
+Send quotation
+
+Customer shall be able to:
+
+View quote
+
+Accept quote
+
+Reject quote
+
+Request changes
+
+Proceed to payment after acceptance
+
+FR-019: BULK CLASS ORDER
+
+A special module shall support graduating cohorts.
+
+Required fields:
+
+University
+
+Campus
+
+Department
+
+Programme
+
+Class
+
+Graduation year
+
+Number of students
+
+Class representative
+
+Contact person
+
+Graduation date
+
+Bulk orders should support:
+
+Student lists
+
+Excel/CSV upload
+
+Individual names
+
+Programmes
+
+Index numbers
+
+Size information
+
+Sash customization
+
+This will be important for large graduation campaigns.
+
+FR-020: STUDENT LIST UPLOAD
+
+Authorized customers shall be able to upload a spreadsheet.
+
+Example:
+
+Name
+
+Index Number
+
+Programme
+
+Shirt Size
+
+Sash Text
+
+John Mensah
+
+1234567890
+
+ICT
+
+M
+
+John Mensah
+
+Ama Doe
+
+1234567891
+
+ICT
+
+S
+
+Ama Doe
+
+System must validate:
+
+Missing names
+
+Duplicate records
+
+Invalid fields
+
+Unsupported file structure
+
+FR-021: CHECKOUT
+
+Checkout shall display:
+
+Customer information
+
+Product(s)
+
+Rental(s)
+
+Quantity
+
+Event date
+
+Delivery address
+
+Delivery fee
+
+Setup fee
+
+Deposit
+
+Discount
+
+Total
+
+Customer must accept:
+
+Terms and conditions
+
+Rental policy where applicable
+
+before payment.
+
+FR-022: PAYMENT
+
+The system shall integrate with an approved Ghana-supported online payment provider.
+
+Payment methods may include:
+
+Mobile Money
+
+Card
+
+Bank-supported channels
+
+Other gateway-supported methods
+
+The application shall not store sensitive card information.
+
+Payment statuses shall include:
+
+Pending
+
+Processing
+
+Paid
+
+Failed
+
+Cancelled
+
+Refunded
+
+Partially refunded
+
+FR-023: DEPOSIT PAYMENT
+
+The system shall support:
+
+Full payment
+
+Deposit payment
+
+Balance payment
+
+Example:
+
+Rental:
+
+GH₵1,000
+
+Deposit:
+
+GH₵400
+
+Balance:
+
+GH₵600
+
+The customer's account shall clearly show:
+
+Paid: GH₵400Outstanding: GH₵600
+
+FR-024: RENTAL SECURITY DEPOSIT
+
+Where applicable, the system shall record:
+
+Deposit amount
+
+Deposit status
+
+Due date
+
+Return status
+
+Deduction
+
+Refund
+
+Example:
+
+Security deposit = GH₵300
+
+After inspection:
+
+Refund = GH₵300
+
+or:
+
+Refund = GH₵250Deduction = GH₵50
+
+All deductions must be recorded.
+
+FR-025: ORDER STATUS
+
+Possible order statuses:
+
+Pending
+
+Awaiting Payment
+
+Payment Confirmed
+
+Awaiting Design
+
+Design Submitted
+
+Awaiting Approval
+
+Approved
+
+In Production
+
+Ready
+
+Dispatched
+
+Delivered
+
+Completed
+
+Cancelled
+
+Refunded
+
+FR-026: RENTAL STATUS
+
+Rental bookings shall use:
+
+Requested
+
+Pending Confirmation
+
+Reserved
+
+Preparing
+
+Ready for Dispatch
+
+Out for Delivery
+
+Setup
+
+Active
+
+Awaiting Pickup
+
+Returned
+
+Inspection
+
+Completed
+
+Damaged
+
+Cancelled
+
+FR-027: ORDER TRACKING
+
+Customer dashboard shall display the status of each order.
+
+Example:
+
+Order #BD-000238
+
+✅ Order Confirmed✅ Payment Received✅ Design Approved✅ Production Completed✅ Dispatched⬜ Delivered
+
+FR-028: NOTIFICATIONS
+
+The system shall provide:
+
+Email
+
+For:
+
+Registration
+
+Order confirmation
+
+Payment confirmation
+
+Design approval request
+
+Dispatch
+
+Completion
+
+Review request
+
+SMS/WhatsApp integration
+
+Where supported, notifications may include:
+
+Booking confirmation
+
+Delivery reminder
+
+Payment reminder
+
+Event reminder
+
+Admin must be able to configure notification templates.
+
+FR-029: EVENT REMINDERS
+
+Customers shall receive reminders before important dates.
+
+Example:
+
+Your graduation booking is 7 days away.
+
+The system may send reminders:
+
+14 days before
+
+7 days before
+
+2 days before
+
+Event day
+
+These values must be configurable.
+
+FR-030: ADMIN DASHBOARD
+
+Dashboard shall show:
+
+Total sales
+
+Today's sales
+
+Pending orders
+
+Pending bookings
+
+Upcoming events
+
+Active rentals
+
+Outstanding balances
+
+Pending quotes
+
+Low-stock items
+
+Items under maintenance
+
+Refunds
+
+Customer count
+
+Charts may show:
+
+Monthly revenue
+
+Orders by category
+
+Rentals by event type
+
+Top-selling products
+
+Top campuses
+
+Graduation campaign performance
+
+FR-031: PRODUCT MANAGEMENT
+
+Admin shall be able to:
+
+Create product
+
+Edit product
+
+Delete/disable product
+
+Upload images
+
+Set price
+
+Set stock
+
+Create variants
+
+Add customization
+
+Add category
+
+Mark featured
+
+Set discount
+
+FR-032: INVENTORY MANAGEMENT
+
+The system shall distinguish between:
+
+Consumable stock
+
+Examples:
+
+Sashes
+
+Medals
+
+Shirts
+
+Packaging materials
+
+and
+
+Reusable assets
+
+Examples:
+
+Tents
+
+Tables
+
+Chairs
+
+Speakers
+
+Fans
+
+Inventory records should include:
+
+Quantity
+
+Available
+
+Reserved
+
+In use
+
+Damaged
+
+Under maintenance
+
+Lost
+
+Retired
+
+FR-033: INVENTORY MOVEMENT
+
+Every inventory movement should be recorded.
+
+Examples:
+
+Stock In
+
+100 chairs received.
+
+Reserved
+
+50 chairs booked.
+
+Dispatched
+
+50 chairs sent to event.
+
+Returned
+
+48 chairs returned.
+
+Damaged
+
+2 chairs marked damaged.
+
+This will help reduce asset loss.
+
+FR-034: ASSET IDENTIFICATION
+
+Reusable equipment may have unique codes.
+
+Examples:
+
+CHR-0001
+
+CHR-0002
+
+TENT-001
+
+TBL-001
+
+SPK-001
+
+QR codes may be introduced later.
+
+FR-035: MAINTENANCE MANAGEMENT
+
+Admin shall be able to put equipment into maintenance.
+
+Example:
+
+TENT-002Status: MaintenanceReason: Torn side panel
+
+The equipment should not be considered available for normal booking while marked unavailable.
+
+FR-036: DELIVERY MANAGEMENT
+
+Admin shall be able to create delivery jobs containing:
+
+Order number
+
+Customer
+
+Phone
+
+Address
+
+Event date
+
+Delivery window
+
+Assigned staff
+
+Assigned driver
+
+Status
+
+Statuses:
+
+Pending
+
+Assigned
+
+Picked Up
+
+In Transit
+
+Delivered
+
+Failed
+
+Returned
+
+FR-037: DELIVERY PROOF
+
+The system should support:
+
+Customer signature
+
+Photo proof
+
+Delivery timestamp
+
+Staff confirmation
+
+Customer confirmation
+
+FR-038: RENTAL RETURN INSPECTION
+
+Upon return, staff shall record:
+
+Returned quantity
+
+Missing quantity
+
+Damaged quantity
+
+Cleanliness
+
+Condition
+
+Notes
+
+Photos
+
+The system should automatically calculate possible deductions.
+
+FR-039: CUSTOMER REVIEWS
+
+Customers shall be able to review completed services.
+
+Review fields:
+
+Rating
+
+Comment
+
+Service type
+
+Photos
+
+Admin shall moderate reviews.
+
+FR-040: PROMOTIONS
+
+Admin shall be able to create:
+
+Coupon codes
+
+Percentage discounts
+
+Fixed discounts
+
+Bulk discounts
+
+Graduation campaigns
+
+Early-bird discounts
+
+Referral discounts
+
+Example:
+
+GRAD2027
+
+10% off qualifying graduation products.
+
+FR-041: CAMPUS CAMPAIGNS
+
+Admin shall be able to create graduation campaigns.
+
+Example:
+
+HTU GRADUATION 2027
+
+Fields:
+
+University
+
+Graduation period
+
+Order deadline
+
+Promotional banner
+
+Products
+
+Packages
+
+Discount
+
+Ambassador
+
+Target number of graduates
+
+Campaign dashboard should display:
+
+Leads
+
+Orders
+
+Revenue
+
+Average order value
+
+Conversion rate
+
+FR-042: CAMPUS AMBASSADOR MODULE
+
+The system should support ambassador accounts.
+
+Each ambassador shall receive:
+
+Unique referral code
+
+Referral URL
+
+Dashboard
+
+Number of leads
+
+Confirmed orders
+
+Commission amount
+
+Example:
+
+BOLDDEE/HTU2027/MOSES
+
+Commission rules shall be configurable.
+
+FR-043: VENDOR/PARTNER MANAGEMENT
+
+The system should support third-party service partners.
+
+Examples:
+
+Photographer
+
+Decorator
+
+Caterer
+
+DJ
+
+Sound provider
+
+Transportation provider
+
+Vendor profile:
+
+Name
+
+Business
+
+Phone
+
+Email
+
+Service
+
+Coverage area
+
+Pricing
+
+Availability
+
+Agreement status
+
+Rating
+
+Commission arrangement
+
+FR-044: SERVICE ASSIGNMENT
+
+Admin shall be able to assign jobs to vendors.
+
+Example:
+
+Booking #BD-0045
+
+Photography
+
+Assigned to:
+
+Photographer A
+
+Date:
+
+16 October 2027
+
+Location:
+
+HTU Campus
+
+Status:
+
+Confirmed
+
+FR-045: ADMIN CUSTOMER MANAGEMENT
+
+Admin shall be able to:
+
+View customer
+
+Search customer
+
+Filter customers
+
+View order history
+
+View payment history
+
+View bookings
+
+View communication records
+
+Add internal notes
+
+Suspend account where necessary
+
+FR-046: SEARCH
+
+Search shall support:
+
+Products
+
+Rentals
+
+Orders
+
+Customers
+
+Bookings
+
+Quotes
+
+Assets
+
+FR-047: FILTERING
+
+Users shall be able to filter by:
+
+Category
+
+Price
+
+Date
+
+Availability
+
+University
+
+Event type
+
+Product type
+
+FR-048: WISHLIST
+
+Customers should be able to save products and rental items.
+
+FR-049: CONTACT / INQUIRY
+
+Customers shall be able to submit inquiries.
+
+Fields:
+
+Name
+
+Phone
+
+Email
+
+Subject
+
+Message
+
+Attachment
+
+Admin shall receive notification.
+
+FR-050: WHATSAPP CTA
+
+The site should provide direct WhatsApp communication.
+
+A product/service should optionally have:
+
+Ask on WhatsApp
+
+The message should automatically contain the relevant product name/order information where possible.
+
+FR-051: CONTENT MANAGEMENT SYSTEM
+
+Authorized admins should be able to manage:
+
+Homepage banners
+
+Announcements
+
+FAQs
+
+Blog posts
+
+Testimonials
+
+Promotional content
+
+Images
+
+Terms
+
+Privacy policy
+
+FR-052: BLOG / CONTENT MARKETING
+
+The system should support articles such as:
+
+Graduation preparation guides
+
+Graduation photo ideas
+
+How to plan a family graduation party
+
+Graduation gift ideas
+
+University-specific graduation guides
+
+This will support SEO and organic traffic.
+
+11. BUSINESS RULES
+
+BR-001: Booking Availability
+
+The system must never confirm a rental booking if required inventory is unavailable.
+
+BR-002: Payment Confirmation
+
+An order requiring payment must not be marked fully confirmed until the payment gateway confirms payment.
+
+BR-003: Personalized Production
+
+Personalized products requiring approval should not move to production before customer approval.
+
+BR-004: Balance Payment
+
+For bookings requiring a balance, the system must clearly show the outstanding amount and deadline.
+
+BR-005: Cancellation
+
+Cancellation rules must depend on:
+
+Product type
+
+Rental type
+
+Time remaining
+
+Production status
+
+Personalized goods may have different cancellation rules.
+
+BR-006: Security Deposits
+
+Security deposits must be tracked separately from revenue.
+
+BR-007: Rental Completion
+
+A rental booking cannot be completed until the equipment is returned or otherwise accounted for.
+
+BR-008: Inventory Update
+
+Inventory availability must automatically update when bookings change.
+
+BR-009: Double Booking Protection
+
+Concurrent requests for limited rental assets must be handled transactionally to prevent overbooking.
+
+12. NON-FUNCTIONAL REQUIREMENTS
+
+NFR-001: PERFORMANCE
+
+The system should:
+
+Load normal pages quickly
+
+Optimize images
+
+Compress assets
+
+Use lazy loading
+
+Cache appropriate data
+
+Minimize unnecessary API calls
+
+Target:
+
+Most normal pages should become interactive within approximately 3 seconds under reasonable network conditions.
+
+NFR-002: RESPONSIVENESS
+
+The web application must support:
+
+360px+ mobile widths
+
+Tablets
+
+Laptops
+
+Desktop displays
+
+Mobile should not be treated as an afterthought because a large percentage of customers are expected to access the platform from phones.
+
+NFR-003: AVAILABILITY
+
+Target:
+
+99%+ monthly application availability, excluding planned maintenance.
+
+NFR-004: SECURITY
+
+The system shall implement:
+
+HTTPS
+
+Secure password hashing
+
+Authentication
+
+Authorization
+
+Role-based access
+
+Input validation
+
+Server-side validation
+
+CSRF protection where applicable
+
+XSS protection
+
+SQL/NoSQL injection protection
+
+Rate limiting
+
+Secure session management
+
+Secure file uploads
+
+Audit logging
+
+NFR-005: PAYMENT SECURITY
+
+The system must not store raw card details.
+
+Payment data should be processed through the payment provider's secure infrastructure.
+
+NFR-006: PRIVACY
+
+The system shall protect customer information.
+
+Customer data may include:
+
+Name
+
+Phone
+
+Email
+
+Address
+
+University
+
+Graduation information
+
+Order history
+
+Access must be restricted according to role.
+
+NFR-007: BACKUPS
+
+Database backups should be performed automatically.
+
+Recommended approach:
+
+Daily backup
+
+Weekly full backup
+
+Retention policy
+
+Off-server backup where possible
+
+NFR-008: AUDIT LOGGING
+
+The system shall record important administrative actions.
+
+Example:
+
+Admin: user@email.comAction: Changed rental priceItem: TENT-001Old price: GH₵500New price: GH₵550Date: 21/09/2026
+
+Critical changes should be traceable.
+
+NFR-009: SCALABILITY
+
+The system architecture should support growth from:
+
+100 users
+
+to
+
+10,000+ users
+
+without requiring a complete rewrite.
+
+NFR-010: MAINTAINABILITY
+
+Code shall be:
+
+Modular
+
+Documented
+
+Version-controlled
+
+Tested
+
+Structured into reusable components
+
+NFR-011: SEO
+
+Public pages should support:
+
+Meta titles
+
+Meta descriptions
+
+Open Graph tags
+
+SEO-friendly URLs
+
+Structured data where applicable
+
+Sitemap
+
+Robots.txt
+
+Canonical URLs
+
+NFR-012: ACCESSIBILITY
+
+The application should follow reasonable accessibility practices, including:
+
+Proper labels
+
+Keyboard navigation
+
+Alt text
+
+Adequate contrast
+
+Accessible forms
+
+Screen-reader-friendly structures
+
+13. RECOMMENDED TECHNICAL ARCHITECTURE
+
+A practical implementation could use:
+
+Frontend
+
+React / Next.js
+
+Responsibilities:
+
+UI
+
+Routing
+
+SEO
+
+Customer dashboard
+
+Admin dashboard
+
+Backend
+
+Node.js + Express/NestJS
+
+Responsibilities:
+
+Business logic
+
+Authentication
+
+Orders
+
+Rentals
+
+Payments
+
+Notifications
+
+API
+
+Database
+
+PostgreSQL
+
+Recommended because the platform involves structured relationships between:
+
+Customers
+
+Orders
+
+Products
+
+Rentals
+
+Payments
+
+Inventory
+
+Bookings
+
+Deliveries
+
+Storage
+
+Object/file storage for:
+
+Product images
+
+Customer uploads
+
+Design files
+
+Delivery proof
+
+Event photographs
+
+Payments
+
+Integrate with a suitable Ghana-supported payment provider.
+
+Notifications
+
+Email provider
+
+SMS provider
+
+WhatsApp integration where commercially/technically available
+
+Hosting
+
+A cloud/VPS deployment may be used.
+
+Suggested architecture:
+
+Customer
+
+   |
+
+   v
+
+Web Application
+
+   |
+
+   v
+
+Backend API
+
+   |
+
+   +------ PostgreSQL
+
+   |
+
+   +------ File Storage
+
+   |
+
+   +------ Payment Gateway
+
+   |
+
+   +------ Email/SMS
+
+   |
+
+   +------ WhatsApp
+
+   |
+
+   +------ Analytics
+
+14. DATABASE REQUIREMENTS
+
+Core entities should include:
+
+users
+
+id
+
+name
+
+email
+
+phone
+
+password_hash
+
+role
+
+status
+
+created_at
+
+updated_at
+
+customers
+
+id
+
+user_id
+
+university
+
+programme
+
+graduation_year
+
+products
+
+id
+
+sku
+
+name
+
+description
+
+price
+
+cost_price
+
+category_id
+
+stock_quantity
+
+status
+
+product_variants
+
+id
+
+product_id
+
+size
+
+color
+
+material
+
+price_adjustment
+
+rentals
+
+id
+
+asset_code
+
+name
+
+description
+
+rental_price
+
+deposit
+
+quantity
+
+status
+
+rental_bookings
+
+id
+
+customer_id
+
+event_date
+
+delivery_date
+
+pickup_date
+
+venue
+
+event_type
+
+subtotal
+
+delivery_fee
+
+setup_fee
+
+deposit
+
+total
+
+status
+
+orders
+
+id
+
+customer_id
+
+order_number
+
+subtotal
+
+discount
+
+delivery_fee
+
+total
+
+payment_status
+
+order_status
+
+order_items
+
+id
+
+order_id
+
+product_id
+
+quantity
+
+unit_price
+
+customization_data
+
+payments
+
+id
+
+customer_id
+
+order_id
+
+reference
+
+amount
+
+method
+
+status
+
+provider
+
+paid_at
+
+quotes
+
+id
+
+customer_id
+
+quote_number
+
+valid_until
+
+subtotal
+
+discount
+
+total
+
+status
+
+quote_items
+
+id
+
+quote_id
+
+description
+
+quantity
+
+unit_price
+
+deliveries
+
+id
+
+order_id
+
+delivery_address
+
+scheduled_date
+
+driver
+
+status
+
+proof
+
+reviews
+
+id
+
+customer_id
+
+order_id
+
+rating
+
+comment
+
+status
+
+vendors
+
+id
+
+name
+
+company
+
+service_type
+
+phone
+
+email
+
+status
+
+campaigns
+
+id
+
+name
+
+university
+
+graduation_year
+
+start_date
+
+end_date
+
+status
+
+ambassadors
+
+id
+
+user_id
+
+campus
+
+referral_code
+
+commission_rate
+
+audit_logs
+
+id
+
+user_id
+
+action
+
+entity
+
+entity_id
+
+old_value
+
+new_value
+
+created_at
+
+15. API REQUIREMENTS
+
+The backend shall expose secure REST APIs or equivalent.
+
+Example endpoints:
+
+Authentication
+
+POST /api/auth/register
+
+POST /api/auth/login
+
+POST /api/auth/logout
+
+POST /api/auth/forgot-password
+
+Products
+
+GET /api/products
+
+GET /api/products/:id
+
+POST /api/admin/products
+
+PUT /api/admin/products/:id
+
+DELETE /api/admin/products/:id
+
+Orders
+
+POST /api/orders
+
+GET /api/orders
+
+GET /api/orders/:id
+
+Rentals
+
+GET /api/rentals
+
+GET /api/rentals/availability
+
+POST /api/rentals/book
+
+Payments
+
+POST /api/payments/initialize
+
+POST /api/payments/verify
+
+POST /api/payments/webhook
+
+Quotes
+
+POST /api/quotes
+
+GET /api/quotes/:id
+
+POST /api/quotes/:id/accept
+
+Admin
+
+GET /api/admin/dashboard
+
+GET /api/admin/orders
+
+GET /api/admin/bookings
+
+GET /api/admin/reports
+
+16. ADMIN DASHBOARD DESIGN
+
+The admin homepage should show a business overview.
+
+Example:
+
+BOLDDEE RENTALS ADMIN
+
+-----------------------------------
+
+Revenue Today          GH₵ 4,250
+
+Orders                 28
+
+Rental Bookings        12
+
+Pending Quotes          7
+
+Upcoming Events        19
+
+Low Stock Items         5
+
+Outstanding Balance     GH₵ 8,450
+
+-----------------------------------
+
+Upcoming Graduation Events
+
+HTU                 25 Oct
+
+UCC                 31 Oct
+
+KNUST               07 Nov
+
+17. REPORTING
+
+The system shall generate reports for:
+
+Sales
+
+Daily
+
+Weekly
+
+Monthly
+
+Yearly
+
+Products
+
+Best-selling
+
+Low-stock
+
+High-margin
+
+Rentals
+
+Most rented assets
+
+Rental frequency
+
+Asset utilization
+
+Events
+
+Number of graduations
+
+Weddings
+
+Birthdays
+
+Corporate events
+
+Other events
+
+Customers
+
+New customers
+
+Returning customers
+
+University distribution
+
+Finance
+
+Revenue
+
+Deposits
+
+Outstanding balances
+
+Refunds
+
+Discounts
+
+18. BUSINESS ANALYTICS
+
+Important KPIs:
+
+Revenue
+
+Total revenue.
+
+Average Order Value
+
+Total Revenue / Number of Orders
+
+Rental Utilization
+
+Booked Asset Days / Available Asset Days
+
+Customer Conversion
+
+Customers / Leads
+
+Repeat Customer Rate
+
+Returning Customers / Total Customers
+
+Campaign Conversion
+
+Confirmed Orders / Campaign Leads
+
+Gross Margin
+
+(Sales - Direct Costs) / Sales × 100
+
+19. SECURITY REQUIREMENTS
+
+Authentication
+
+Use secure password hashing such as Argon2 or bcrypt.
+
+Authorization
+
+Every protected API endpoint must verify permission.
+
+Input Validation
+
+All input must be validated server-side.
+
+File Security
+
+Uploaded files must:
+
+Restrict file types
+
+Restrict file size
+
+Validate MIME type
+
+Use secure storage
+
+Prevent executable uploads
+
+Rate Limiting
+
+Authentication and sensitive endpoints must be rate limited.
+
+Audit
+
+Administrative actions must be logged.
+
+20. FRAUD AND ORDER PROTECTION
+
+The system should detect unusual activity such as:
+
+Repeated failed payment attempts
+
+Excessive coupon use
+
+Duplicate bookings
+
+Suspicious account creation
+
+Repeated refund attempts
+
+Potentially suspicious transactions may be marked:
+
+Manual Review Required
+
+21. CUSTOMER COMMUNICATION SYSTEM
+
+Each order should have an activity history.
+
+Example:
+
+21 Sep 2026, 10:15
+
+Order created
+
+21 Sep 2026, 10:17
+
+Payment confirmed
+
+22 Sep 2026, 09:30
+
+Design uploaded
+
+22 Sep 2026, 15:10
+
+Customer approved design
+
+24 Sep 2026, 12:40
+
+Production completed
+
+This provides accountability.
+
+22. DESIGN AND UX REQUIREMENTS
+
+The design should communicate:
+
+Celebration
+
+Professionalism
+
+Trust
+
+Youthfulness
+
+Premium service
+
+The UI should be:
+
+Clean
+
+Modern
+
+Mobile-first
+
+Image-driven
+
+Easy to navigate
+
+The customer should not need technical knowledge.
+
+23. BRAND/UI DIRECTION
+
+Brand
+
+BOLDDEE RENTALS
+
+Tagline
+
+We Make Your Moments Worthwhile.
+
+Potential visual identity:
+
+Strong wordmark
+
+Elegant event imagery
+
+Modern typography
+
+Premium but affordable appearance
+
+Clean cards and booking interfaces
+
+The design should work equally well for:
+
+University graduates
+
+Parents
+
+Event organizers
+
+Corporate clients
+
+24. MOBILE-FIRST FEATURES
+
+On mobile, the application should prioritize:
+
+WhatsApp contact
+
+Shop
+
+Book rental
+
+Call
+
+Checkout
+
+Order tracking
+
+A floating mobile CTA may include:
+
+WhatsApp | Book | Shop
+
+25. CHECKOUT UX
+
+The checkout should be designed to minimize abandonment.
+
+Recommended flow:
+
+Step 1
+
+Customer details
+
+Step 2
+
+Event information
+
+Step 3
+
+Delivery/pickup
+
+Step 4
+
+Customization
+
+Step 5
+
+Order review
+
+Step 6
+
+Payment
+
+Step 7
+
+Confirmation
+
+26. ORDER CONFIRMATION
+
+After successful payment:
+
+Thank You!
+
+Display:
+
+Order number
+
+Amount paid
+
+Balance
+
+Event date
+
+Delivery date
+
+Customer support contact
+
+Example:
+
+Order #BD-2027-00125
+
+Payment: Confirmed
+
+Paid: GH₵500
+
+Balance: GH₵200
+
+Graduation Date:
+
+25 October 2027
+
+Delivery:
+
+24 October 2027
+
+27. RENTAL AGREEMENT
+
+For equipment rentals, customers may be required to accept a rental agreement containing:
+
+Rental period
+
+Equipment list
+
+Fees
+
+Deposit
+
+Damage responsibility
+
+Late-return terms
+
+Cancellation terms
+
+Return requirements
+
+Agreement acceptance should be timestamped.
+
+28. REFUND MANAGEMENT
+
+Admin shall be able to:
+
+Approve refund
+
+Reject refund
+
+Enter reason
+
+Select full/partial refund
+
+Record amount
+
+Track status
+
+Refund statuses:
+
+Requested
+
+Under Review
+
+Approved
+
+Processing
+
+Completed
+
+Rejected
+
+29. CUSTOMER SUPPORT
+
+Support options:
+
+WhatsApp
+
+Phone
+
+Email
+
+Contact form
+
+Admin support ticket functionality may be added.
+
+Tickets should support:
+
+Open
+
+Assigned
+
+In progress
+
+Resolved
+
+Closed
+
+30. INVENTORY RENTAL CALENDAR
+
+Admin shall have a calendar displaying:
+
+Rental bookings
+
+Setup dates
+
+Pickup dates
+
+Return dates
+
+Maintenance periods
+
+Example:
+
+OCTOBER 2027
+
+25 - HTU Graduation
+
+26 - Private Graduation Setup
+
+28 - Wedding
+
+30 - Birthday Event
+
+31. GRADUATION CAMPAIGN PAGE
+
+Each university can have a dedicated landing page.
+
+Example:
+
+/graduation/htu-2027
+
+Page content:
+
+HTU GRADUATION 2027
+
+Includes:
+
+Graduation packages
+
+Order deadline
+
+Sash options
+
+Medal
+
+Photography
+
+Family tents
+
+Class packages
+
+Delivery information
+
+FAQ
+
+WhatsApp CTA
+
+This will be valuable for digital marketing.
+
+32. UNIVERSITY-SPECIFIC DATABASE
+
+The system should maintain:
+
+University
+
+Campus
+
+Department
+
+Programme
+
+Graduation season
+
+Graduation dates
+
+Campaigns
+
+This allows targeted marketing.
+
+33. SEO STRATEGY
+
+Potential search pages:
+
+Graduation sashes in Ghana
+
+Graduation photography in Ho
+
+Graduation tents in Ho
+
+Graduation tents in Accra
+
+Graduation chairs rental Ghana
+
+HTU graduation packages
+
+Graduation gifts Ghana
+
+Graduation decoration Ghana
+
+The system should automatically produce SEO-friendly URLs.
+
+34. SOCIAL MEDIA INTEGRATION
+
+The website should support:
+
+Instagram links
+
+TikTok links
+
+Facebook
+
+WhatsApp
+
+Share buttons
+
+Products should support social sharing.
+
+35. MARKETING FEATURES
+
+The platform should support:
+
+Coupon codes
+
+Campaigns
+
+Referral codes
+
+Flash promotions
+
+Early-bird discounts
+
+Bulk discounts
+
+Abandoned-cart reminders
+
+Email campaigns
+
+36. ABANDONED CART
+
+If a logged-in customer adds products but does not complete checkout, the system may record the cart and later trigger:
+
+"You left something behind."
+
+This should be configurable and not intrusive.
+
+37. FUTURE MARKETPLACE MODEL
+
+In a later phase, BOLDDEE can allow external service providers to register.
+
+Example:
+
+A photographer signs up.
+
+They offer:
+
+Graduation Photography — GH₵500
+
+Customer books through BOLDDEE.
+
+BOLDDEE receives:
+
+10–20% commission
+
+Vendor receives:
+
+Remaining amount
+
+This transforms the application from a rental company website into a graduation/event marketplace.
+
+38. FUTURE MOBILE APPLICATION
+
+Possible future mobile apps:
+
+BOLDDEE Customer App
+
+Shop
+
+Book
+
+Track
+
+Pay
+
+Review
+
+BOLDDEE Staff App
+
+Deliveries
+
+Asset scanning
+
+Returns
+
+Inspection
+
+Photos
+
+Job completion
+
+39. MVP RELEASE
+
+The first production version should prioritize the functions that directly generate revenue.
+
+MVP MODULE 1
+
+Public website
+
+MVP MODULE 2
+
+Products
+
+MVP MODULE 3
+
+Shopping cart
+
+MVP MODULE 4
+
+Checkout
+
+MVP MODULE 5
+
+Payment
+
+MVP MODULE 6
+
+Rental booking
+
+MVP MODULE 7
+
+Order tracking
+
+MVP MODULE 8
+
+Admin dashboard
+
+MVP MODULE 9
+
+Inventory
+
+MVP MODULE 10
+
+Customer management
+
+MVP MODULE 11
+
+WhatsApp/contact
+
+MVP MODULE 12
+
+Basic reports
+
+40. PHASE 2
+
+Add:
+
+Bulk class orders
+
+Student spreadsheet upload
+
+Graduation campaigns
+
+Ambassador system
+
+Vendor management
+
+Photography marketplace
+
+Advanced delivery management
+
+Reviews
+
+Referral program
+
+41. PHASE 3
+
+Add:
+
+Full vendor marketplace
+
+Customer mobile app
+
+Staff mobile app
+
+QR asset management
+
+Loyalty program
+
+Advanced analytics
+
+Automated marketing
+
+AI event assistant
+
+Multi-city operations
+
+Multi-vendor payment settlement
+
+42. SYSTEM WORKFLOW
+
+Normal Product Order
+
+Customer
+
+   ↓
+
+Browse Product
+
+   ↓
+
+Customize
+
+   ↓
+
+Add to Cart
+
+   ↓
+
+Checkout
+
+   ↓
+
+Payment
+
+   ↓
+
+Order Confirmed
+
+   ↓
+
+Production
+
+   ↓
+
+Quality Check
+
+   ↓
+
+Dispatch
+
+   ↓
+
+Delivery
+
+   ↓
+
+Completed
+
+Rental Order
+
+Customer
+
+   ↓
+
+Select Rental
+
+   ↓
+
+Choose Date
+
+   ↓
+
+Check Availability
+
+   ↓
+
+Enter Venue
+
+   ↓
+
+Confirm Quote
+
+   ↓
+
+Pay Deposit
+
+   ↓
+
+Booking Reserved
+
+   ↓
+
+Preparation
+
+   ↓
+
+Delivery / Setup
+
+   ↓
+
+Event
+
+   ↓
+
+Pickup
+
+   ↓
+
+Inspection
+
+   ↓
+
+Deposit Settlement
+
+   ↓
+
+Completed
+
+43. ACCEPTANCE CRITERIA
+
+The system shall be considered MVP-ready when:
+
+Customer
+
+Can register.
+
+Can log in.
+
+Can browse products.
+
+Can search products.
+
+Can add items to cart.
+
+Can customize supported products.
+
+Can book available rentals.
+
+Can check out.
+
+Can pay.
+
+Can view order status.
+
+Can view booking status.
+
+Administration
+
+Can manage products.
+
+Can manage rentals.
+
+Can view orders.
+
+Can view customers.
+
+Can confirm payments.
+
+Can manage inventory.
+
+Can manage deliveries.
+
+Can generate basic reports.
+
+Reliability
+
+Rental double-booking is prevented.
+
+Payment status is correctly recorded.
+
+Personalized order details are stored accurately.
+
+Customer data is protected.
+
+Backup procedures are operational.
+
+44. TESTING REQUIREMENTS
+
+Testing shall include:
+
+Unit Testing
+
+Individual functions/components.
+
+Integration Testing
+
+API + database + payment gateway.
+
+System Testing
+
+Complete customer journey.
+
+User Acceptance Testing
+
+Real BOLDDEE staff should test the application.
+
+Security Testing
+
+Test:
+
+Authentication
+
+Authorization
+
+Input validation
+
+File upload
+
+Session management
+
+Performance Testing
+
+Test concurrent:
+
+Browsing
+
+Checkout
+
+Booking
+
+Mobile Testing
+
+Test:
+
+Android Chrome
+
+iPhone Safari
+
+Desktop browsers
+
+45. ADMIN REPORT EXPORT
+
+Reports should support:
+
+PDF
+
+Excel/CSV
+
+Possible reports:
+
+Orders
+
+Sales
+
+Inventory
+
+Rentals
+
+Payments
+
+Customers
+
+Quotes
+
+Campaigns
+
+Ambassador commissions
+
+46. SYSTEM SETTINGS
+
+Admin shall be able to configure:
+
+Business name
+
+Logo
+
+Contact information
+
+Currency
+
+Delivery zones
+
+Tax/fee settings
+
+Cancellation rules
+
+Rental deposits
+
+Notification settings
+
+Payment settings
+
+Social media links
+
+Currency should initially be:
+
+Ghana Cedi (GH₵)
+
+47. LOCALIZATION
+
+Initial target market:
+
+Ghana
+
+The platform should use:
+
+Ghana Cedi
+
+Ghana phone-number formats
+
+Ghanaian location structure
+
+Ghana-relevant delivery options
+
+Future localization could support other West African markets.
+
+48. DATA RETENTION
+
+The system should maintain:
+
+Customer records
+
+Orders
+
+Payments
+
+Bookings
+
+Rental history
+
+Audit logs
+
+for an appropriate business retention period determined by company policy and applicable law.
+
+49. LEGAL AND POLICY PAGES
+
+The platform should contain:
+
+Terms of Service
+
+Rental Terms
+
+Cancellation Policy
+
+Refund Policy
+
+Privacy Policy
+
+Cookie Notice where required
+
+Photography/service terms
+
+Customers must be able to access these before purchasing or booking.
+
+50. BUSINESS CONTACT STRUCTURE
+
+The platform should prominently display:
+
+BOLDDEE RENTALS
+
+We Make Your Moments Worthwhile.
+
+Customer channels:
+
+Phone
+
+WhatsApp
+
+Email
+
+Social media
+
+Operating hours should be configurable in the admin panel.
+
+51. SUCCESS METRICS
+
+The first year should track:
+
+Customer metrics
+
+Number of registered customers
+
+Number of paying customers
+
+Customer acquisition cost
+
+Returning customer rate
+
+Sales metrics
+
+Monthly revenue
+
+Average order value
+
+Number of orders
+
+Gross margin
+
+Rental metrics
+
+Number of bookings
+
+Asset utilization
+
+Average rental value
+
+Damage rate
+
+Graduation metrics
+
+Graduates served
+
+Universities served
+
+Class contracts
+
+Revenue per graduating cohort
+
+Marketing metrics
+
+Leads
+
+Conversion rate
+
+Ambassador referrals
+
+WhatsApp inquiries
+
+Social-media conversions
+
+52. EXAMPLE CUSTOMER USE CASES
+
+Use Case 1 — Individual Graduate
+
+Ama is graduating from a Ghanaian university.
+
+She visits BOLDDEE.
+
+Selects:
+
+Graduate Classic Package
+
+Enters:
+
+Ama Mensah
+
+Chooses size:
+
+Medium
+
+Books:
+
+Graduation Photography
+
+Pays online.
+
+System sends confirmation.
+
+She receives her products and attends her photography session.
+
+Use Case 2 — Family
+
+A graduate's family wants a post-graduation gathering.
+
+They book:
+
+1 large tent
+
+40 chairs
+
+5 tables
+
+Tablecloths
+
+Decoration
+
+They pay the required deposit.
+
+BOLDDEE delivers and sets up at the venue.
+
+After the event, equipment is collected and inspected.
+
+Use Case 3 — Class Representative
+
+The Computer Science class has 120 students.
+
+Representative submits:
+
+Bulk Graduation Order
+
+Uploads student spreadsheet.
+
+Selects:
+
+120 sashes
+
+120 medals
+
+120 shirts
+
+BOLDDEE prepares quotation.
+
+Representative approves.
+
+Class pays deposit.
+
+Orders enter production.
+
+53. FUTURE BUSINESS MODEL
+
+The technology should eventually support three models:
+
+Model A — Direct Sales
+
+BOLDDEE owns the products.
+
+Customer buys from BOLDDEE.
+
+Model B — Rentals
+
+BOLDDEE owns assets.
+
+Customer rents them.
+
+Model C — Marketplace
+
+Third-party suppliers use BOLDDEE.
+
+BOLDDEE earns a commission.
+
+This gives the platform multiple ways to generate revenue.
+
+54. RECOMMENDED NAVIGATION
+
+Customer Website
+
+HOME
+
+GRADUATION
+
+   ├── Sashes
+
+   ├── Medals
+
+   ├── Caps
+
+   ├── Graduation Packages
+
+   └── Class Orders
+
+RENTALS
+
+   ├── Tents
+
+   ├── Chairs
+
+   ├── Tables
+
+   ├── Sound
+
+   ├── Lighting
+
+   └── Décor
+
+MOMENTS
+
+   ├── Photography
+
+   ├── Videography
+
+   └── Photo Booth
+
+EVENTS
+
+   ├── Weddings
+
+   ├── Birthdays
+
+   ├── Funerals
+
+   ├── Church Events
+
+   └── Corporate
+
+SHOP
+
+ABOUT
+
+CONTACT
+
+55. ADMIN NAVIGATION
+
+DASHBOARD
+
+ORDERS
+
+   ├── All Orders
+
+   ├── Pending
+
+   ├── Production
+
+   ├── Ready
+
+   └── Completed
+
+RENTALS
+
+   ├── Bookings
+
+   ├── Availability
+
+   └── Calendar
+
+INVENTORY
+
+   ├── Products
+
+   ├── Assets
+
+   ├── Stock
+
+   └── Maintenance
+
+CUSTOMERS
+
+QUOTES
+
+DELIVERIES
+
+PAYMENTS
+
+VENDORS
+
+CAMPAIGNS
+
+AMBASSADORS
+
+MARKETING
+
+CONTENT
+
+REPORTS
+
+USERS & ROLES
+
+SETTINGS
+
+AUDIT LOGS
+
+56. DEVELOPMENT PRIORITY
+
+The project should be built in the following order:
+
+Stage 1
+
+Brand + UX + database design
+
+Stage 2
+
+Authentication + customer profiles
+
+Stage 3
+
+Product catalogue
+
+Stage 4
+
+Cart + checkout
+
+Stage 5
+
+Payment integration
+
+Stage 6
+
+Rental inventory + availability
+
+Stage 7
+
+Booking management
+
+Stage 8
+
+Admin dashboard
+
+Stage 9
+
+Delivery management
+
+Stage 10
+
+Notifications
+
+Stage 11
+
+Reporting
+
+Stage 12
+
+Bulk graduation functionality
+
+Stage 13
+
+Testing
+
+Stage 14
+
+Production deployment
+
+57. CRITICAL PRODUCT PRINCIPLE
+
+The system should not be designed as merely a website that says:
+
+"Call us to book."
+
+The objective is to transform the business into a transactional digital platform where the customer can complete most of the process without manual intervention.
+
+The platform should therefore follow this principle:
+
+DISCOVER → CONFIGURE → BOOK/BUY → PAY → TRACK → RECEIVE → REVIEW
+
+58. FINAL PRODUCT DEFINITION
+
+The BOLDDEE RENTALS Web Application is a graduation and event commerce/rental platform designed initially for Ghanaian university graduates and their families.
+
+Its first market is:
+
+Final-year students and graduating cohorts.
+
+Its broader market is:
+
+The Ghanaian events and equipment-rental industry.
+
+The platform combines:
+
+E-commerce
+
+Rental Management
+
+Event Booking
+
+Photography Booking
+
+Bulk/Class Orders
+
+Digital Payments
+
+Delivery Management
+
+Customer Relationship Management
+
+Business Analytics
+
+under one platform.
+
+59. PRODUCT TAGLINE
+
+BOLDDEE RENTALS
+
+We Make Your Moments Worthwhile.
+
+60. CORE MVP PROMISE
+
+When a graduating student visits BOLDDEE RENTALS, they should immediately understand:
+
+“Everything I need for my graduation celebration can be arranged here.”
+
+And when a parent or event organizer visits:
+
+“I can book the equipment and services I need from one trusted company.”
+
+That is the core product vision.
+
+END OF SOFTWARE REQUIREMENTS SPECIFICATION
+
+BOLDDEE RENTALSWe Make Your Moments Worthwhile.
+
+Document Version: 1.0Status: ProposedPrepared for: Product Design & Software Development
