@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Plus,
   Trash2,
@@ -14,7 +14,12 @@ import {
   RotateCcw,
   Search,
   ShieldCheck,
-  Truck
+  Truck,
+  ExternalLink,
+  Upload,
+  X,
+  Loader2,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useProducts } from '../context/ProductsContext';
 import { MOCK_ADMIN_ASSETS, MOCK_ORDERS } from '../data/mockData';
@@ -39,6 +44,11 @@ export const Admin = () => {
     in_stock: true,
   });
 
+  // Image Upload & Gallery State
+  const [imageUrls, setImageUrls] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
 
   // Authentication Guard
@@ -54,6 +64,81 @@ export const Admin = () => {
     navigate('/admin-login');
   };
 
+  // Client-side image compression & optimization (keeps storage light & fast)
+  const compressImageFile = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const maxWidth = 1200;
+          const maxHeight = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Export as optimized JPEG
+          const compressed = canvas.toDataURL('image/jpeg', 0.82);
+          resolve(compressed);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
+  const handleFiles = async (fileList) => {
+    const files = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const compressedList = await Promise.all(files.map((file) => compressImageFile(file)));
+      setImageUrls((prev) => [...prev, ...compressedList]);
+    } catch (err) {
+      console.error('Error processing uploaded image:', err);
+      alert('Could not process selected image file. Please try another image.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = (indexToRemove) => {
+    setImageUrls((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  const handleSetPrimary = (indexToPrimary) => {
+    setImageUrls((prev) => {
+      const item = prev[indexToPrimary];
+      const rest = prev.filter((_, idx) => idx !== indexToPrimary);
+      return [item, ...rest];
+    });
+  };
+
+  const handleAddUrlImage = () => {
+    if (formData.image.trim()) {
+      setImageUrls((prev) => [...prev, formData.image.trim()]);
+      setFormData((prev) => ({ ...prev, image: '' }));
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -63,38 +148,35 @@ export const Admin = () => {
     }
 
     const priceNum = parseFloat(formData.price) || 0;
-    const finalImage = formData.image.trim() || '/images/custom_sash.jpg';
+    
+    // Determine image list (uploaded images have priority; fallback to manual input or default)
+    const finalImages = imageUrls.length > 0
+      ? imageUrls
+      : (formData.image.trim() ? [formData.image.trim()] : ['/images/custom_sash.jpg']);
+    const primaryImage = finalImages[0];
+
+    const productPayload = {
+      name: formData.name,
+      description: formData.description,
+      price: priceNum,
+      unit: formData.unit,
+      pillar: formData.pillar,
+      category: formData.category,
+      image: primaryImage,
+      image_urls: finalImages,
+      featured: formData.featured,
+      in_stock: formData.in_stock,
+    };
 
     if (editingId) {
-      updateProduct(editingId, {
-        name: formData.name,
-        description: formData.description,
-        price: priceNum,
-        unit: formData.unit,
-        pillar: formData.pillar,
-        category: formData.category,
-        image: finalImage,
-        image_urls: [finalImage],
-        featured: formData.featured,
-        in_stock: formData.in_stock,
-      });
+      updateProduct(editingId, productPayload);
       setEditingId(null);
     } else {
-      addProduct({
-        name: formData.name,
-        description: formData.description,
-        price: priceNum,
-        unit: formData.unit,
-        pillar: formData.pillar,
-        category: formData.category,
-        image: finalImage,
-        image_urls: [finalImage],
-        featured: formData.featured,
-        in_stock: formData.in_stock,
-      });
+      addProduct(productPayload);
     }
 
     // Reset Form
+    setImageUrls([]);
     setFormData({
       name: '',
       description: '',
@@ -110,6 +192,11 @@ export const Admin = () => {
 
   const handleEdit = (p) => {
     setEditingId(p.id);
+    const existingImages = p.image_urls?.length
+      ? p.image_urls
+      : (p.image ? [p.image] : []);
+    setImageUrls(existingImages);
+
     setFormData({
       name: p.name,
       description: p.description || '',
@@ -117,7 +204,7 @@ export const Admin = () => {
       unit: p.unit || 'piece',
       pillar: p.pillar || 'BOLDDEE GRAD',
       category: p.category || 'General',
-      image: p.image || p.image_urls?.[0] || '',
+      image: '',
       featured: p.featured || false,
       in_stock: p.in_stock !== false,
     });
@@ -126,6 +213,7 @@ export const Admin = () => {
 
   const handleCancelEdit = () => {
     setEditingId(null);
+    setImageUrls([]);
     setFormData({
       name: '',
       description: '',
@@ -159,6 +247,14 @@ export const Admin = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5 text-emerald-200 hover:text-amber-400"
+              title="Return to customer website"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              <span>View Storefront</span>
+            </Link>
             <button
               onClick={resetToDefault}
               className="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5"
@@ -294,18 +390,171 @@ export const Admin = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-emerald-200 mb-1">Image URL / Path</label>
-                  <input
-                    type="text"
-                    value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    placeholder="/images/custom_sash.jpg or https://..."
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-[#072416] border border-emerald-800/60 text-white text-sm focus:border-amber-400 focus:outline-none"
-                  />
-                  <span className="text-[11px] text-emerald-400/60 block mt-1">
-                    Presets: <code>/images/custom_sash.jpg</code>, <code>/images/rental_equipment.jpg</code>, <code>/images/bolddee_moments.jpg</code>, <code>/images/hero_graduation.jpg</code>
-                  </span>
+                {/* Product Images Upload & Gallery */}
+                <div className="space-y-3 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-emerald-200">
+                      Product Images (Upload or Presets) *
+                    </label>
+                    <span className="text-[11px] text-emerald-400/80">
+                      {imageUrls.length} image{imageUrls.length !== 1 ? 's' : ''} added
+                    </span>
+                  </div>
+
+                  {/* Drag and Drop Upload Zone */}
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        handleFiles(e.dataTransfer.files);
+                      }
+                    }}
+                    className={`border-2 border-dashed rounded-xl p-6 text-center transition-all relative ${
+                      isDragging
+                        ? 'border-amber-400 bg-amber-400/10 scale-[1.01]'
+                        : 'border-emerald-800/80 hover:border-amber-400/70 bg-[#072416]/70'
+                    }`}
+                  >
+                    <input
+                      type="file"
+                      id="product-image-upload"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          handleFiles(e.target.files);
+                        }
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                    <div className="flex flex-col items-center justify-center space-y-2 pointer-events-none">
+                      <div className="w-12 h-12 rounded-full bg-emerald-900/60 flex items-center justify-center text-amber-400 border border-emerald-700/50 shadow-inner">
+                        {uploading ? (
+                          <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
+                        ) : (
+                          <Upload className="w-6 h-6 text-amber-400" />
+                        )}
+                      </div>
+                      <div className="text-sm font-semibold text-white">
+                        {uploading ? (
+                          <span className="text-amber-300">Optimizing & Uploading Image(s)...</span>
+                        ) : (
+                          <>
+                            <span className="text-amber-400 hover:underline">Click to browse</span> or drag and drop photo(s)
+                          </>
+                        )}
+                      </div>
+                      <p className="text-xs text-emerald-400/70">
+                        Supports PNG, JPG, JPEG, WEBP. Images are automatically optimized.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Image Gallery & Preview Grid */}
+                  {imageUrls.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      <p className="text-[11px] font-semibold text-emerald-300">
+                        Image Previews (Hover to make Primary or Delete):
+                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {imageUrls.map((url, idx) => (
+                          <div
+                            key={idx}
+                            className={`relative group rounded-lg overflow-hidden border aspect-square bg-[#03150c] shadow-md transition-all ${
+                              idx === 0
+                                ? 'border-amber-400 ring-2 ring-amber-400/40'
+                                : 'border-emerald-800/80'
+                            }`}
+                          >
+                            <img
+                              src={url}
+                              alt={`Product image ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+
+                            {/* Primary Badge */}
+                            {idx === 0 && (
+                              <span className="absolute top-1.5 left-1.5 text-[10px] font-black bg-amber-400 text-black px-1.5 py-0.5 rounded shadow">
+                                PRIMARY
+                              </span>
+                            )}
+
+                            {/* Actions overlay */}
+                            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2">
+                              {idx !== 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleSetPrimary(idx)}
+                                  className="text-[10px] bg-amber-400 text-black font-bold px-2 py-1 rounded hover:bg-amber-300 transition-colors shadow"
+                                >
+                                  Set as Primary
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(idx)}
+                                className="text-[10px] bg-red-600 text-white font-bold px-2 py-1 rounded hover:bg-red-500 transition-colors flex items-center gap-1 shadow"
+                              >
+                                <X className="w-3 h-3" />
+                                <span>Remove</span>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* URL Input & Presets Alternative */}
+                  <div className="pt-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={formData.image}
+                        onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                        placeholder="Or enter image URL (https://... or /images/...)"
+                        className="flex-1 px-3.5 py-2 rounded-lg bg-[#072416] border border-emerald-800/60 text-white text-xs focus:border-amber-400 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddUrlImage}
+                        className="btn-secondary text-xs py-2 px-3 shrink-0"
+                      >
+                        Add URL
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      <span className="text-[10px] text-emerald-400/60">Quick Presets:</span>
+                      {[
+                        { label: 'Custom Sash', path: '/images/custom_sash.jpg' },
+                        { label: 'Canopy/Tent', path: '/images/rental_equipment.jpg' },
+                        { label: 'Photography', path: '/images/bolddee_moments.jpg' },
+                        { label: 'Celebration', path: '/images/hero_graduation.jpg' },
+                      ].map((preset) => (
+                        <button
+                          key={preset.path}
+                          type="button"
+                          onClick={() => {
+                            if (!imageUrls.includes(preset.path)) {
+                              setImageUrls((prev) => [...prev, preset.path]);
+                            }
+                          }}
+                          className="text-[10px] px-2 py-0.5 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-200 hover:text-amber-400 transition-colors"
+                        >
+                          + {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, X, Shield, Search, FileText, Phone } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search, FileText, Phone } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 export const Navbar = ({ onOpenOrderTracker, onOpenQuoteModal, onOpenBulkModal }) => {
@@ -74,17 +74,6 @@ export const Navbar = ({ onOpenOrderTracker, onOpenQuoteModal, onOpenBulkModal }
               }`}
             >
               Contact
-            </Link>
-            <Link
-              to="/admin-login"
-              className={`text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                isActive('/admin') || isActive('/admin-login')
-                  ? 'text-amber-400'
-                  : 'text-emerald-300/80 hover:text-amber-400'
-              }`}
-            >
-              <Shield className="h-4 w-4 text-amber-400" />
-              Admin
             </Link>
           </div>
 
@@ -176,16 +165,6 @@ export const Navbar = ({ onOpenOrderTracker, onOpenQuoteModal, onOpenBulkModal }
               onClick={() => setIsMenuOpen(false)}
             >
               Contact Us
-            </Link>
-            <Link
-              to="/admin-login"
-              className={`block px-3 py-2 rounded-lg text-base font-semibold flex items-center gap-2 ${
-                isActive('/admin-login') ? 'text-amber-400 bg-emerald-900/30' : 'text-emerald-300 hover:text-amber-400'
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <Shield className="h-4 w-4 text-amber-400" />
-              Admin Portal
             </Link>
           </div>
         )}

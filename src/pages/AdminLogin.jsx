@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Lock, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Lock, ArrowRight, ShieldCheck, AlertCircle, ArrowLeft } from 'lucide-react';
 
 export const AdminLogin = ({ onLoginSuccess }) => {
   const [secret, setSecret] = useState('');
@@ -31,8 +31,21 @@ export const AdminLogin = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center p-4 bg-[#051a10] relative">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#051a10] relative">
       <div className="glass-panel w-full max-w-md p-8 border border-emerald-800/60 shadow-2xl relative z-10">
+        <div className="mb-6 flex items-center justify-between">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs text-emerald-300/80 hover:text-amber-400 transition-colors font-medium"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Storefront</span>
+          </Link>
+          <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20">
+            INTERNAL
+          </span>
+        </div>
+
         <div className="text-center mb-8">
           <img
             src="/logo.png"

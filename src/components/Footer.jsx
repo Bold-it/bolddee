@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MessageCircle, MapPin, ShieldCheck, Heart, Camera } from 'lucide-react';
+import { Phone, Mail, MessageCircle, MapPin, ShieldCheck, Heart, Camera, Lock } from 'lucide-react';
 
 export const Footer = () => {
   return (
@@ -61,11 +61,6 @@ export const Footer = () => {
                   Contact & Location
                 </Link>
               </li>
-              <li>
-                <Link to="/admin-login" className="hover:text-amber-400 transition-colors">
-                  Admin Portal
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -115,9 +110,20 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Copyright */}
+        {/* Bottom Copyright & Staff Access */}
         <div className="border-t border-emerald-900/60 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-emerald-400/60">
-          <p>&copy; {new Date().getFullYear()} BOLDDEE RENTALS. All rights reserved.</p>
+          <div className="flex items-center gap-3">
+            <p>&copy; {new Date().getFullYear()} BOLDDEE RENTALS. All rights reserved.</p>
+            <span>•</span>
+            <Link
+              to="/admin-login"
+              className="text-emerald-400/40 hover:text-amber-400 transition-colors flex items-center gap-1"
+              title="Restricted Staff Portal"
+            >
+              <Lock className="w-3 h-3" />
+              <span>Staff Portal</span>
+            </Link>
+          </div>
           <p className="flex items-center gap-1">
             Built with <Heart className="w-3.5 h-3.5 text-amber-400 fill-amber-400" /> for Unforgettable Moments across Ghana
           </p>

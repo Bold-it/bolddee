@@ -40,6 +40,8 @@ function ScrollToTop() {
 // Inner App Content
 function AppContent() {
   const { addItem, clearCart, items } = useCart();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin') || location.pathname === '/admin-login';
 
   // Modals state
   const [customizerProduct, setCustomizerProduct] = useState(null);
@@ -81,12 +83,14 @@ function AppContent() {
     <div className="min-h-screen flex flex-col bg-[#051a10] text-white">
       <ScrollToTop />
 
-      {/* Global Navbar */}
-      <Navbar
-        onOpenOrderTracker={handleOpenOrderTracker}
-        onOpenQuoteModal={handleOpenQuoteModal}
-        onOpenBulkModal={handleOpenBulkModal}
-      />
+      {/* Global Navbar - Hidden on Admin routes */}
+      {!isAdminRoute && (
+        <Navbar
+          onOpenOrderTracker={handleOpenOrderTracker}
+          onOpenQuoteModal={handleOpenQuoteModal}
+          onOpenBulkModal={handleOpenBulkModal}
+        />
+      )}
 
       {/* Main Routes Viewport */}
       <main className="flex-1">
@@ -135,11 +139,11 @@ function AppContent() {
         </Routes>
       </main>
 
-      {/* Global Footer */}
-      <Footer />
+      {/* Global Footer - Hidden on Admin routes */}
+      {!isAdminRoute && <Footer />}
 
-      {/* Floating WhatsApp CTA */}
-      <WhatsAppFloatingCTA />
+      {/* Floating WhatsApp CTA - Hidden on Admin routes */}
+      {!isAdminRoute && <WhatsAppFloatingCTA />}
 
       {/* Interactive Modals */}
       {customizerProduct && (
