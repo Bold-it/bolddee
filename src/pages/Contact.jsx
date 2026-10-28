@@ -19,13 +19,33 @@ export const Contact = () => {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const whatsappMessage = `*NEW WEBSITE INQUIRY — BOLDDEE RENTALS*\n\n*Name:* ${formData.name}\n*Phone:* ${formData.phone}\n*Email:* ${formData.email}\n*Event Date:* ${formData.eventDate || 'Not specified'}\n*Message:* ${formData.message}`;
-    const whatsappUrl = `https://wa.me/233546996210?text=${encodeURIComponent(whatsappMessage)}`;
-    window.open(whatsappUrl, '_blank');
-    setSubmitted(true);
+    setLoading(true);
+    try {
+      await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          eventDate: formData.eventDate,
+          subject: 'Website Rental / Sash Inquiry',
+          message: formData.message
+        })
+      });
+    } catch (err) {
+      console.warn('Backend inquiry logging non-blocking error:', err);
+    } finally {
+      setLoading(false);
+      const whatsappMessage = `*NEW WEBSITE INQUIRY — BOLDDEE RENTALS*\n\n*Name:* ${formData.name}\n*Phone:* ${formData.phone}\n*Email:* ${formData.email}\n*Event Date:* ${formData.eventDate || 'Not specified'}\n*Message:* ${formData.message}`;
+      const whatsappUrl = `https://wa.me/233546996210?text=${encodeURIComponent(whatsappMessage)}`;
+      window.open(whatsappUrl, '_blank');
+      setSubmitted(true);
+    }
   };
 
   return (

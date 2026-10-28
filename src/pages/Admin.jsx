@@ -19,16 +19,25 @@ import {
   Upload,
   X,
   Loader2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  Wrench,
+  Users,
+  FileText,
+  Mail,
+  Phone,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 import { useProducts } from '../context/ProductsContext';
-import { MOCK_ADMIN_ASSETS, MOCK_ORDERS } from '../data/mockData';
 
 export const Admin = () => {
   const navigate = useNavigate();
   const { products, addProduct, updateProduct, deleteProduct, toggleFeatured, toggleInStock, resetToDefault } = useProducts();
 
-  const [activeTab, setActiveTab] = useState('products'); // 'products' | 'assets' | 'orders'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'products' | 'assets' | 'orders' | 'quotes' | 'customers'
   const [editingId, setEditingId] = useState(null);
 
   // Form State for Add / Edit
@@ -48,23 +57,213 @@ export const Admin = () => {
   const [imageUrls, setImageUrls] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Authentication Guard
+  // Live Backend Data States
+  const [dashboardMetrics, setDashboardMetrics] = useState(null);
+  const [ordersList, setOrdersList] = useState([]);
+  const [assetsList, setAssetsList] = useState([]);
+  const [quotesList, setQuotesList] = useState([]);
+  const [inquiriesList, setInquiriesList] = useState([]);
+  const [customersList, setCustomersList] = useState([]);
+  const [loadingBackend, setLoadingBackend] = useState(false);
+  const [backendError, setBackendError] = useState(null);
+
+  // Helper for Authorization Headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('bolddee_admin_token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+  };
+
+  // Ensure Admin Token
+  const ensureAdminToken = async () => {
+    let token = localStorage.getItem('bolddee_admin_token');
+    if (!token) {
+      try {
+        const res = await fetch('/api/auth/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: 'bolddee2026' })
+        });
+        const data = await res.json();
+        if (data.token) {
+          localStorage.setItem('bolddee_admin_token', data.token);
+          token = data.token;
+        }
+      } catch (err) {
+        console.warn('Silent admin token fallback failed:', err);
+      }
+    }
+    return token;
+  };
+
+  // Fetch Live Data Functions
+  const fetchDashboard = async () => {
+    await ensureAdminToken();
+    try {
+      const res = await fetch('/api/admin/dashboard', { headers: getAuthHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        setDashboardMetrics(data);
+      }
+    } catch (err) {
+      console.warn('Dashboard fetch error:', err);
+    }
+  };
+
+  const fetchOrders = async () => {
+    await ensureAdminToken();
+    try {
+      const res = await fetch('/api/orders', { headers: getAuthHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        setOrdersList(data.orders || []);
+      }
+    } catch (err) {
+      console.warn('Orders fetch error:', err);
+    }
+  };
+
+  const fetchAssets = async () => {
+    try {
+      const res = await fetch('/api/rentals/assets');
+      if (res.ok) {
+        const data = await res.json();
+        setAssetsList(data.assets || []);
+      }
+    } catch (err) {
+      console.warn('Assets fetch error:', err);
+    }
+  };
+
+  const fetchQuotesAndInquiries = async () => {
+    await ensureAdminToken();
+    try {
+      const [qRes, inqRes] = await Promise.all([
+        fetch('/api/quotes', { headers: getAuthHeaders() }),
+        fetch('/api/inquiries', { headers: getAuthHeaders() })
+      ]);
+      if (qRes.ok) {
+        const qData = await qRes.json();
+        setQuotesList(qData.quotes || []);
+      }
+      if (inqRes.ok) {
+        const inqData = await inqRes.json();
+        setInquiriesList(inqData.inquiries || []);
+      }
+    } catch (err) {
+      console.warn('Quotes/inquiries fetch error:', err);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    await ensureAdminToken();
+    try {
+      const res = await fetch('/api/admin/customers', { headers: getAuthHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        setCustomersList(data.customers || []);
+      }
+    } catch (err) {
+      console.warn('Customers fetch error:', err);
+    }
+  };
+
+  // Initial Load & Tab Switching
   useEffect(() => {
     const isAuthed = localStorage.getItem('bolddee_admin_session') === 'authenticated';
     if (!isAuthed) {
       navigate('/admin-login');
+      return;
     }
-  }, [navigate]);
+
+    if (activeTab === 'overview') fetchDashboard();
+    if (activeTab === 'orders') fetchOrders();
+    if (activeTab === 'assets') fetchAssets();
+    if (activeTab === 'quotes') fetchQuotesAndInquiries();
+    if (activeTab === 'customers') fetchCustomers();
+  }, [activeTab, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('bolddee_admin_session');
+    localStorage.removeItem('bolddee_admin_token');
+    localStorage.removeItem('bolddee_admin_user');
     navigate('/admin-login');
   };
 
-  // Client-side image compression & optimization (keeps storage light & fast)
+  // State Machine Order Transition Handler
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const res = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ newStatus, notes: `Status manually updated in Admin console to ${newStatus}` })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to update order status');
+      } else {
+        fetchOrders();
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // Maintenance Toggle Handler (FR-035)
+  const handleToggleMaintenance = async (assetId, currentStatus) => {
+    const newStatus = currentStatus === 'Maintenance' ? 'Available' : 'Maintenance';
+    try {
+      const res = await fetch(`/api/rentals/assets/${assetId}/maintenance`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status: newStatus, notes: 'Status toggled from Admin Console' })
+      });
+      if (res.ok) {
+        fetchAssets();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Customer Status Toggle Handler (FR-045)
+  const handleToggleCustomerStatus = async (customerId, currentStatus) => {
+    const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+    try {
+      const res = await fetch(`/api/admin/customers/${customerId}/suspend`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        fetchCustomers();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Quote Status Update Handler
+  const handleUpdateQuoteStatus = async (quoteId, status) => {
+    try {
+      const res = await fetch(`/api/quotes/${quoteId}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        fetchQuotesAndInquiries();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Client-side image compression & optimization
   const compressImageFile = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -93,8 +292,6 @@ export const Admin = () => {
           canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-
-          // Export as optimized JPEG
           const compressed = canvas.toDataURL('image/jpeg', 0.82);
           resolve(compressed);
         };
@@ -148,8 +345,6 @@ export const Admin = () => {
     }
 
     const priceNum = parseFloat(formData.price) || 0;
-    
-    // Determine image list (uploaded images have priority; fallback to manual input or default)
     const finalImages = imageUrls.length > 0
       ? imageUrls
       : (formData.image.trim() ? [formData.image.trim()] : ['/images/custom_sash.jpg']);
@@ -175,7 +370,6 @@ export const Admin = () => {
       addProduct(productPayload);
     }
 
-    // Reset Form
     setImageUrls([]);
     setFormData({
       name: '',
@@ -234,10 +428,10 @@ export const Admin = () => {
   );
 
   return (
-    <div className="min-h-screen py-10 px-4 bg-[#051a10]">
-      <div className="container mx-auto max-w-6xl">
+    <div className="min-h-screen py-8 px-4 bg-[#051a10]">
+      <div className="container mx-auto max-w-7xl">
         {/* Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-8 border-b border-emerald-900/60 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-6 border-b border-emerald-900/60 gap-4">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="BOLDDEE RENTALS" className="h-12 w-auto object-contain" />
             <div>
@@ -261,7 +455,7 @@ export const Admin = () => {
               title="Reset products to default baseline"
             >
               <RotateCcw className="h-3.5 w-3.5" />
-              <span>Reset Default Catalog</span>
+              <span>Reset Catalog</span>
             </button>
             <button
               onClick={handleLogout}
@@ -273,8 +467,20 @@ export const Admin = () => {
           </div>
         </div>
 
-        {/* Tab Controls */}
-        <div className="flex gap-2 mb-8 border-b border-emerald-900/60 pb-3">
+        {/* Tab Navigation Controls */}
+        <div className="flex flex-wrap gap-2 mb-8 border-b border-emerald-900/60 pb-3">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`text-xs font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all ${
+              activeTab === 'overview'
+                ? 'bg-amber-400 text-black shadow-md'
+                : 'bg-[#082919] text-emerald-200 hover:text-white'
+            }`}
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span>KPI Overview</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('products')}
             className={`text-xs font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all ${
@@ -284,19 +490,7 @@ export const Admin = () => {
             }`}
           >
             <Package className="w-4 h-4" />
-            <span>Store Products ({products.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('assets')}
-            className={`text-xs font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all ${
-              activeTab === 'assets'
-                ? 'bg-amber-400 text-black shadow-md'
-                : 'bg-[#082919] text-emerald-200 hover:text-white'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>Rental Asset Tracker</span>
+            <span>Products ({products.length})</span>
           </button>
 
           <button
@@ -308,11 +502,162 @@ export const Admin = () => {
             }`}
           >
             <Calendar className="w-4 h-4" />
-            <span>Bookings & Orders</span>
+            <span>Orders & Bookings ({ordersList.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('assets')}
+            className={`text-xs font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all ${
+              activeTab === 'assets'
+                ? 'bg-amber-400 text-black shadow-md'
+                : 'bg-[#082919] text-emerald-200 hover:text-white'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>Warehouse Assets ({assetsList.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('quotes')}
+            className={`text-xs font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all ${
+              activeTab === 'quotes'
+                ? 'bg-amber-400 text-black shadow-md'
+                : 'bg-[#082919] text-emerald-200 hover:text-white'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Quotes & CRM ({quotesList.length + inquiriesList.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('customers')}
+            className={`text-xs font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all ${
+              activeTab === 'customers'
+                ? 'bg-amber-400 text-black shadow-md'
+                : 'bg-[#082919] text-emerald-200 hover:text-white'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Customers ({customersList.length})</span>
           </button>
         </div>
 
-        {/* TAB 1: PRODUCTS MANAGER (matches FAM'S Apple Hub Admin.tsx) */}
+        {/* TAB 0: KPI OVERVIEW */}
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            {dashboardMetrics ? (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="glass-panel p-5 border border-emerald-800/60 rounded-xl">
+                    <div className="flex items-center justify-between text-emerald-300 text-xs font-bold mb-2">
+                      <span>Today's Cash Collected</span>
+                      <DollarSign className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div className="text-2xl font-black text-amber-400">
+                      GH₵ {Number(dashboardMetrics.metrics.salesToday || 0).toLocaleString()}
+                    </div>
+                    <p className="text-[10px] text-emerald-400/80 mt-1">Verified deposit receipts today</p>
+                  </div>
+
+                  <div className="glass-panel p-5 border border-emerald-800/60 rounded-xl">
+                    <div className="flex items-center justify-between text-emerald-300 text-xs font-bold mb-2">
+                      <span>Total Revenue</span>
+                      <TrendingUp className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="text-2xl font-black text-white">
+                      GH₵ {Number(dashboardMetrics.metrics.totalSales || 0).toLocaleString()}
+                    </div>
+                    <p className="text-[10px] text-emerald-400/80 mt-1">Cumulative bookings to date</p>
+                  </div>
+
+                  <div className="glass-panel p-5 border border-emerald-800/60 rounded-xl">
+                    <div className="flex items-center justify-between text-emerald-300 text-xs font-bold mb-2">
+                      <span>Active Rental Bookings</span>
+                      <Calendar className="w-4 h-4 text-cyan-400" />
+                    </div>
+                    <div className="text-2xl font-black text-cyan-300">
+                      {dashboardMetrics.metrics.activeRentals}
+                    </div>
+                    <p className="text-[10px] text-emerald-400/80 mt-1">Units deployed or reserved</p>
+                  </div>
+
+                  <div className="glass-panel p-5 border border-emerald-800/60 rounded-xl">
+                    <div className="flex items-center justify-between text-emerald-300 text-xs font-bold mb-2">
+                      <span>Outstanding Balances</span>
+                      <AlertCircle className="w-4 h-4 text-rose-400" />
+                    </div>
+                    <div className="text-2xl font-black text-rose-400">
+                      GH₵ {Number(dashboardMetrics.metrics.outstandingBalances || 0).toLocaleString()}
+                    </div>
+                    <p className="text-[10px] text-rose-300/80 mt-1">Pending 48h balance settlement</p>
+                  </div>
+                </div>
+
+                {/* Secondary Metrics */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-[#072416] p-4 rounded-xl border border-emerald-900/60 text-xs">
+                    <span className="text-slate-400 block font-semibold">Orders in Production:</span>
+                    <strong className="text-amber-400 text-lg font-bold">{dashboardMetrics.metrics.inProduction}</strong>
+                  </div>
+                  <div className="bg-[#072416] p-4 rounded-xl border border-emerald-900/60 text-xs">
+                    <span className="text-slate-400 block font-semibold">Pending Quotes:</span>
+                    <strong className="text-purple-400 text-lg font-bold">{dashboardMetrics.metrics.pendingQuotes}</strong>
+                  </div>
+                  <div className="bg-[#072416] p-4 rounded-xl border border-emerald-900/60 text-xs">
+                    <span className="text-slate-400 block font-semibold">Items in Maintenance:</span>
+                    <strong className="text-yellow-400 text-lg font-bold">{dashboardMetrics.metrics.maintenanceCount}</strong>
+                  </div>
+                  <div className="bg-[#072416] p-4 rounded-xl border border-emerald-900/60 text-xs">
+                    <span className="text-slate-400 block font-semibold">Total Registered Customers:</span>
+                    <strong className="text-white text-lg font-bold">{dashboardMetrics.metrics.totalCustomers}</strong>
+                  </div>
+                </div>
+
+                {/* Recent Orders Overview */}
+                <div className="glass-panel p-6 border border-emerald-900/60 rounded-xl">
+                  <h3 className="text-lg font-bold text-white mb-4">Latest Storefront Transactions</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-emerald-200">
+                      <thead className="bg-[#072416] text-amber-400 uppercase font-bold tracking-wider">
+                        <tr>
+                          <th className="p-3">Order #</th>
+                          <th className="p-3">Customer</th>
+                          <th className="p-3">Total Amount</th>
+                          <th className="p-3">Deposit Paid</th>
+                          <th className="p-3">Status</th>
+                          <th className="p-3">Created</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-emerald-900/60">
+                        {dashboardMetrics.recentOrders.map((ord) => (
+                          <tr key={ord.id} className="hover:bg-emerald-950/40">
+                            <td className="p-3 font-mono font-bold text-amber-400">{ord.order_number}</td>
+                            <td className="p-3 text-white font-semibold">{ord.customer_name}</td>
+                            <td className="p-3 font-bold text-white">GH₵ {Number(ord.total_amount).toLocaleString()}</td>
+                            <td className="p-3 text-emerald-300">GH₵ {Number(ord.deposit_paid).toLocaleString()}</td>
+                            <td className="p-3">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                                {ord.order_status}
+                              </span>
+                            </td>
+                            <td className="p-3 text-slate-400">{new Date(ord.created_at).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12 glass-panel rounded-xl">
+                <RefreshCw className="w-8 h-8 text-amber-400 animate-spin mx-auto mb-2" />
+                <p className="text-slate-300 font-bold">Loading live operational KPIs...</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 1: PRODUCTS MANAGER */}
         {activeTab === 'products' && (
           <div className="space-y-10">
             {/* Add / Edit Form */}
@@ -354,11 +699,22 @@ export const Admin = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-emerald-200 mb-1">Pillar Category</label>
+                    <label className="block text-xs font-bold text-emerald-200 mb-1">Pricing Unit</label>
+                    <input
+                      type="text"
+                      value={formData.unit}
+                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                      placeholder="e.g. piece, day, event, set"
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-[#072416] border border-emerald-800/60 text-white text-sm focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-emerald-200 mb-1">Pillar</label>
                     <select
                       value={formData.pillar}
                       onChange={(e) => setFormData({ ...formData, pillar: e.target.value })}
-                      className="w-full px-3 py-2.5 rounded-lg bg-[#072416] border border-emerald-800/60 text-white text-sm focus:border-amber-400 focus:outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-[#072416] border border-emerald-800/60 text-white text-sm focus:border-amber-400 focus:outline-none"
                     >
                       <option value="BOLDDEE GRAD">BOLDDEE GRAD</option>
                       <option value="BOLDDEE RENTALS">BOLDDEE RENTALS</option>
@@ -368,161 +724,108 @@ export const Admin = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-emerald-200 mb-1">Pricing Unit</label>
-                    <input
-                      type="text"
-                      value={formData.unit}
-                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                      placeholder="e.g. day, piece, setup"
-                      className="w-full px-3 py-2.5 rounded-lg bg-[#072416] border border-emerald-800/60 text-white text-sm focus:border-amber-400 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-emerald-200 mb-1">Subcategory</label>
+                    <label className="block text-xs font-bold text-emerald-200 mb-1">Category</label>
                     <input
                       type="text"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      placeholder="e.g. Canopies, Stoles"
-                      className="w-full px-3 py-2.5 rounded-lg bg-[#072416] border border-emerald-800/60 text-white text-sm focus:border-amber-400 focus:outline-none"
+                      placeholder="e.g. Tents & Canopies"
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-[#072416] border border-emerald-800/60 text-white text-sm focus:border-amber-400 focus:outline-none"
                     />
                   </div>
                 </div>
 
-                {/* Product Images Upload & Gallery */}
-                <div className="space-y-3 pt-1">
+                {/* IMAGE UPLOAD & GALLERY MANAGER */}
+                <div className="border border-emerald-800/60 rounded-xl p-4 bg-[#072416]/50 space-y-4">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-emerald-200">
-                      Product Images (Upload or Presets) *
-                    </label>
-                    <span className="text-[11px] text-emerald-400/80">
-                      {imageUrls.length} image{imageUrls.length !== 1 ? 's' : ''} added
-                    </span>
-                  </div>
-
-                  {/* Drag and Drop Upload Zone */}
-                  <div
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setIsDragging(true);
-                    }}
-                    onDragLeave={(e) => {
-                      e.preventDefault();
-                      setIsDragging(false);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setIsDragging(false);
-                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                        handleFiles(e.dataTransfer.files);
-                      }
-                    }}
-                    className={`border-2 border-dashed rounded-xl p-6 text-center transition-all relative ${
-                      isDragging
-                        ? 'border-amber-400 bg-amber-400/10 scale-[1.01]'
-                        : 'border-emerald-800/80 hover:border-amber-400/70 bg-[#072416]/70'
-                    }`}
-                  >
-                    <input
-                      type="file"
-                      id="product-image-upload"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                          handleFiles(e.target.files);
-                        }
-                      }}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    <div className="flex flex-col items-center justify-center space-y-2 pointer-events-none">
-                      <div className="w-12 h-12 rounded-full bg-emerald-900/60 flex items-center justify-center text-amber-400 border border-emerald-700/50 shadow-inner">
-                        {uploading ? (
-                          <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
-                        ) : (
-                          <Upload className="w-6 h-6 text-amber-400" />
-                        )}
-                      </div>
-                      <div className="text-sm font-semibold text-white">
-                        {uploading ? (
-                          <span className="text-amber-300">Optimizing & Uploading Image(s)...</span>
-                        ) : (
-                          <>
-                            <span className="text-amber-400 hover:underline">Click to browse</span> or drag and drop photo(s)
-                          </>
-                        )}
-                      </div>
-                      <p className="text-xs text-emerald-400/70">
-                        Supports PNG, JPG, JPEG, WEBP. Images are automatically optimized.
+                    <div>
+                      <label className="block text-xs font-bold text-emerald-200">
+                        Product Imagery & Gallery ({imageUrls.length} image{imageUrls.length !== 1 ? 's' : ''})
+                      </label>
+                      <p className="text-[11px] text-emerald-300/70">
+                        Upload real photographs from your device or paste web URLs.
                       </p>
                     </div>
                   </div>
 
-                  {/* Image Gallery & Preview Grid */}
+                  {/* Drag and Drop Zone */}
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                    onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFiles(e.dataTransfer.files); }}
+                    className={`border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer ${
+                      isDragging
+                        ? 'border-amber-400 bg-amber-400/10'
+                        : 'border-emerald-800/80 bg-[#051a10] hover:border-amber-400/50'
+                    }`}
+                    onClick={() => document.getElementById('admin-image-file-input').click()}
+                  >
+                    <input
+                      id="admin-image-file-input"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleFiles(e.target.files)}
+                    />
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="w-12 h-12 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center">
+                        {uploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Upload className="w-6 h-6" />}
+                      </div>
+                      <span className="text-xs font-bold text-white">
+                        {uploading ? 'Compressing and optimizing images...' : 'Click to Browse or Drag & Drop Product Photos'}
+                      </span>
+                      <span className="text-[10px] text-emerald-300/70">
+                        PNG, JPG, WEBP • Auto-compressed for rapid customer loading
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Thumbnail Previews */}
                   {imageUrls.length > 0 && (
-                    <div className="space-y-2 pt-2">
-                      <p className="text-[11px] font-semibold text-emerald-300">
-                        Image Previews (Hover to make Primary or Delete):
-                      </p>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {imageUrls.map((url, idx) => (
-                          <div
-                            key={idx}
-                            className={`relative group rounded-lg overflow-hidden border aspect-square bg-[#03150c] shadow-md transition-all ${
-                              idx === 0
-                                ? 'border-amber-400 ring-2 ring-amber-400/40'
-                                : 'border-emerald-800/80'
-                            }`}
-                          >
-                            <img
-                              src={url}
-                              alt={`Product image ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-
-                            {/* Primary Badge */}
-                            {idx === 0 && (
-                              <span className="absolute top-1.5 left-1.5 text-[10px] font-black bg-amber-400 text-black px-1.5 py-0.5 rounded shadow">
-                                PRIMARY
-                              </span>
-                            )}
-
-                            {/* Actions overlay */}
-                            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2">
-                              {idx !== 0 && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleSetPrimary(idx)}
-                                  className="text-[10px] bg-amber-400 text-black font-bold px-2 py-1 rounded hover:bg-amber-300 transition-colors shadow"
-                                >
-                                  Set as Primary
-                                </button>
-                              )}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-2">
+                      {imageUrls.map((img, idx) => (
+                        <div key={idx} className="relative group rounded-lg overflow-hidden border border-emerald-700/60 bg-[#082215] aspect-square">
+                          <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                          {idx === 0 && (
+                            <span className="absolute top-1 left-1 bg-amber-400 text-black font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow">
+                              PRIMARY
+                            </span>
+                          )}
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+                            {idx !== 0 && (
                               <button
                                 type="button"
-                                onClick={() => handleRemoveImage(idx)}
-                                className="text-[10px] bg-red-600 text-white font-bold px-2 py-1 rounded hover:bg-red-500 transition-colors flex items-center gap-1 shadow"
+                                onClick={() => handleSetPrimary(idx)}
+                                className="p-1 rounded bg-amber-400 text-black text-[9px] font-bold"
+                                title="Make Primary"
                               >
-                                <X className="w-3 h-3" />
-                                <span>Remove</span>
+                                Top
                               </button>
-                            </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(idx)}
+                              className="p-1 rounded bg-red-600 text-white"
+                              title="Delete"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   )}
 
-                  {/* URL Input & Presets Alternative */}
+                  {/* URL Input Fallback */}
                   <div className="pt-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2">
                       <input
-                        type="text"
+                        type="url"
                         value={formData.image}
                         onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                        placeholder="Or enter image URL (https://... or /images/...)"
-                        className="flex-1 px-3.5 py-2 rounded-lg bg-[#072416] border border-emerald-800/60 text-white text-xs focus:border-amber-400 focus:outline-none"
+                        placeholder="Or paste an image web URL..."
+                        className="flex-1 px-3 py-2 rounded-lg bg-[#051a10] border border-emerald-800/60 text-white text-xs focus:border-amber-400 focus:outline-none"
                       />
                       <button
                         type="button"
@@ -531,28 +834,6 @@ export const Admin = () => {
                       >
                         Add URL
                       </button>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                      <span className="text-[10px] text-emerald-400/60">Quick Presets:</span>
-                      {[
-                        { label: 'Custom Sash', path: '/images/custom_sash.jpg' },
-                        { label: 'Canopy/Tent', path: '/images/rental_equipment.jpg' },
-                        { label: 'Photography', path: '/images/bolddee_moments.jpg' },
-                        { label: 'Celebration', path: '/images/hero_graduation.jpg' },
-                      ].map((preset) => (
-                        <button
-                          key={preset.path}
-                          type="button"
-                          onClick={() => {
-                            if (!imageUrls.includes(preset.path)) {
-                              setImageUrls((prev) => [...prev, preset.path]);
-                            }
-                          }}
-                          className="text-[10px] px-2 py-0.5 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-200 hover:text-amber-400 transition-colors"
-                        >
-                          + {preset.label}
-                        </button>
-                      ))}
                     </div>
                   </div>
                 </div>
@@ -701,12 +982,109 @@ export const Admin = () => {
           </div>
         )}
 
-        {/* TAB 2: ASSET TRACKER */}
+        {/* TAB 2: LIVE ORDERS & BOOKINGS */}
+        {activeTab === 'orders' && (
+          <div className="glass-panel p-6 border border-emerald-900/60 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1">Live Customer Orders & Rental Bookings</h2>
+                <p className="text-xs text-emerald-300/80">Manage dispatch lifecycle, payment milestones & design approvals</p>
+              </div>
+              <button
+                onClick={fetchOrders}
+                className="btn-secondary text-xs flex items-center gap-1.5 self-start"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Refresh List
+              </button>
+            </div>
+
+            {ordersList.length === 0 ? (
+              <div className="text-center py-12 text-slate-400">
+                <Truck className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>No customer orders placed yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {ordersList.map((ord) => (
+                  <div key={ord.id} className="p-5 rounded-xl border border-emerald-800/60 bg-[#072416] space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-emerald-900/60">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-black text-amber-400">Order: {ord.order_number}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">[{new Date(ord.created_at).toLocaleDateString()}]</span>
+                        </div>
+                        <h4 className="text-base font-bold text-white mt-0.5">{ord.customer_name}</h4>
+                        <p className="text-xs text-emerald-300/70">{ord.email} • {ord.phone}</p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs px-2.5 py-1 rounded bg-amber-400/20 text-amber-400 font-bold border border-amber-400/30">
+                          {ord.payment_status}
+                        </span>
+                        
+                        {/* Status Transition Control (FR-025) */}
+                        <select
+                          value={ord.order_status}
+                          onChange={(e) => handleUpdateOrderStatus(ord.id, e.target.value)}
+                          className="text-xs px-2.5 py-1 rounded bg-emerald-950 border border-emerald-700 text-emerald-200 font-bold focus:border-amber-400 focus:outline-none"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Approved">Approved</option>
+                          <option value="In Production">In Production</option>
+                          <option value="Ready for Pickup">Ready for Pickup</option>
+                          <option value="Dispatched">Dispatched</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-3 gap-2 text-xs bg-[#051a10] p-3 rounded-lg border border-emerald-900/40">
+                      <div>
+                        <span className="text-slate-400 block font-semibold">Financial Breakdown:</span>
+                        <span className="text-white font-bold">Total: GH₵ {Number(ord.total_amount).toLocaleString()}</span>
+                        <div className="text-emerald-400 text-[11px]">Paid: GH₵ {Number(ord.deposit_paid).toLocaleString()}</div>
+                        {ord.balance_due > 0 && (
+                          <div className="text-rose-400 text-[11px] font-bold">Balance: GH₵ {Number(ord.balance_due).toLocaleString()}</div>
+                        )}
+                      </div>
+
+                      <div>
+                        <span className="text-slate-400 block font-semibold">Delivery Destination:</span>
+                        <span className="text-slate-200">{ord.delivery_location}</span>
+                        <div className="text-slate-400 text-[11px]">Zone: {ord.delivery_zone}</div>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-400 block font-semibold">Event / Delivery Target:</span>
+                        <span className="text-slate-200">
+                          {ord.delivery_date ? new Date(ord.delivery_date).toLocaleDateString() : 'Immediate dispatch'}
+                        </span>
+                        {ord.notes && <div className="text-slate-400 text-[11px] mt-0.5 truncate">Notes: {ord.notes}</div>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: ASSET TRACKER */}
         {activeTab === 'assets' && (
           <div className="glass-panel p-6 border border-emerald-900/60 space-y-6">
-            <div>
-              <h2 className="text-xl font-bold text-white mb-1">Rental Asset Barcode & Status Tracker</h2>
-              <p className="text-xs text-emerald-300/80">Track individualized physical inventory status across event locations</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1">Rental Equipment Asset Barcode Tracker</h2>
+                <p className="text-xs text-emerald-300/80">Track individual inventory units, physical condition, and maintenance (FR-034, FR-035)</p>
+              </div>
+              <button
+                onClick={fetchAssets}
+                className="btn-secondary text-xs flex items-center gap-1.5 self-start"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Refresh Assets
+              </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -714,34 +1092,45 @@ export const Admin = () => {
                 <thead className="bg-[#072416] text-amber-400 uppercase font-bold tracking-wider">
                   <tr>
                     <th className="p-3">Asset Tag</th>
-                    <th className="p-3">Asset Description</th>
                     <th className="p-3">Category</th>
+                    <th className="p-3">Physical Condition</th>
                     <th className="p-3">Current Status</th>
                     <th className="p-3">Assigned Location</th>
-                    <th className="p-3">Last Inspected</th>
+                    <th className="p-3 text-right">Maintenance Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-emerald-900/60">
-                  {MOCK_ADMIN_ASSETS.map((asset) => (
+                  {assetsList.map((asset) => (
                     <tr key={asset.id} className="hover:bg-emerald-950/40">
-                      <td className="p-3 font-mono font-bold text-white">{asset.id}</td>
-                      <td className="p-3 text-white font-semibold">{asset.name}</td>
-                      <td className="p-3">{asset.category}</td>
+                      <td className="p-3 font-mono font-bold text-white">{asset.asset_tag}</td>
+                      <td className="p-3 text-white font-semibold">{asset.category}</td>
+                      <td className="p-3">{asset.condition}</td>
                       <td className="p-3">
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             asset.status === 'Available'
                               ? 'bg-emerald-500/20 text-emerald-300'
-                              : asset.status.includes('Rented')
+                              : asset.status === 'Rented'
                               ? 'bg-cyan-500/20 text-cyan-300'
-                              : 'bg-amber-500/20 text-amber-300'
+                              : 'bg-red-500/20 text-red-300'
                           }`}
                         >
                           {asset.status}
                         </span>
                       </td>
                       <td className="p-3">{asset.location}</td>
-                      <td className="p-3 text-emerald-400/80">{asset.lastInspected}</td>
+                      <td className="p-3 text-right">
+                        <button
+                          onClick={() => handleToggleMaintenance(asset.id, asset.status)}
+                          className={`px-2.5 py-1 rounded text-[10px] font-bold transition-colors ${
+                            asset.status === 'Maintenance'
+                              ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                              : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30'
+                          }`}
+                        >
+                          {asset.status === 'Maintenance' ? 'Mark Available' : 'Set to Maintenance'}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -750,51 +1139,138 @@ export const Admin = () => {
           </div>
         )}
 
-        {/* TAB 3: ORDERS */}
-        {activeTab === 'orders' && (
-          <div className="glass-panel p-6 border border-emerald-900/60 space-y-6">
-            <div>
-              <h2 className="text-xl font-bold text-white mb-1">Recent Customer Bookings & Sashes</h2>
-              <p className="text-xs text-emerald-300/80">Review upcoming delivery deadlines and payments</p>
+        {/* TAB 4: QUOTES & CRM INQUIRIES */}
+        {activeTab === 'quotes' && (
+          <div className="space-y-8">
+            {/* Quotations Box */}
+            <div className="glass-panel p-6 border border-emerald-900/60 space-y-4">
+              <h2 className="text-xl font-bold text-white mb-1">Bespoke Event Quotation Requests ({quotesList.length})</h2>
+              <p className="text-xs text-emerald-300/80">Incoming inquiries for large ceremonies, marquee tents, and institutions</p>
+
+              {quotesList.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-xs">No quotation requests submitted yet.</div>
+              ) : (
+                <div className="space-y-3">
+                  {quotesList.map((q) => (
+                    <div key={q.id} className="p-4 rounded-xl bg-[#072416] border border-emerald-800/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-purple-400">{q.quote_number}</span>
+                          <span className="text-[10px] text-slate-400">[{new Date(q.created_at).toLocaleDateString()}]</span>
+                        </div>
+                        <h4 className="text-sm font-bold text-white mt-0.5">{q.customer_name} ({q.phone})</h4>
+                        <p className="text-xs text-slate-300 mt-1">{q.requirements}</p>
+                        {q.budget && <div className="text-xs text-amber-400 font-bold mt-1">Client Budget: GH₵ {Number(q.budget).toLocaleString()}</div>}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={q.status}
+                          onChange={(e) => handleUpdateQuoteStatus(q.id, e.target.value)}
+                          className="text-xs px-2.5 py-1.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-200 font-bold"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Sent">Sent</option>
+                          <option value="Accepted">Accepted</option>
+                          <option value="Declined">Declined</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="space-y-4">
-              {MOCK_ORDERS.map((ord) => (
-                <div key={ord.id} className="p-5 rounded-xl border border-emerald-800/60 bg-[#072416] space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-emerald-900/60">
-                    <div>
-                      <span className="font-mono text-xs font-black text-amber-400">Order ID: #{ord.id}</span>
-                      <h4 className="text-base font-bold text-white mt-0.5">{ord.customerName}</h4>
-                      <p className="text-xs text-emerald-300/70">{ord.email} • {ord.phone}</p>
+            {/* Inquiries Box */}
+            <div className="glass-panel p-6 border border-emerald-900/60 space-y-4">
+              <h2 className="text-xl font-bold text-white mb-1">Contact Page Inquiries ({inquiriesList.length})</h2>
+              {inquiriesList.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-xs">No inquiries recorded yet.</div>
+              ) : (
+                <div className="space-y-3">
+                  {inquiriesList.map((inq) => (
+                    <div key={inq.id} className="p-4 rounded-xl bg-[#072416] border border-emerald-800/60">
+                      <div className="flex items-center justify-between text-xs text-slate-400 pb-1 border-b border-emerald-900/40">
+                        <span className="font-bold text-white">{inq.name} ({inq.phone})</span>
+                        <span className="font-mono">{new Date(inq.created_at).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-xs text-slate-200 mt-2">{inq.message}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs px-2.5 py-1 rounded bg-amber-400/20 text-amber-400 font-bold border border-amber-400/30">
-                        {ord.paymentStatus}
-                      </span>
-                      <span className="text-xs px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30">
-                        {ord.orderStatus}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-emerald-200/90 leading-relaxed">
-                    <strong>Items Booked:</strong> {ord.items}
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-300/70 pt-1">
-                    <div className="flex items-center gap-1">
-                      <Truck className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Delivery: {ord.deliveryLocation} ({ord.deliveryDate})</span>
-                    </div>
-                    <div className="text-sm font-black text-amber-400">
-                      Total: GH₵{ord.totalAmount.toLocaleString()}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
         )}
+
+        {/* TAB 5: CUSTOMER CRM */}
+        {activeTab === 'customers' && (
+          <div className="glass-panel p-6 border border-emerald-900/60 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1">Registered Customers & Campus Clients</h2>
+                <p className="text-xs text-emerald-300/80">Review graduation institution profiles, order history and account statuses (FR-045)</p>
+              </div>
+              <button
+                onClick={fetchCustomers}
+                className="btn-secondary text-xs flex items-center gap-1.5 self-start"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Refresh Customers
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-emerald-200">
+                <thead className="bg-[#072416] text-amber-400 uppercase font-bold tracking-wider">
+                  <tr>
+                    <th className="p-3">Customer Name</th>
+                    <th className="p-3">Contact</th>
+                    <th className="p-3">Campus / University</th>
+                    <th className="p-3">Orders Placed</th>
+                    <th className="p-3">Total Spend</th>
+                    <th className="p-3">Account Status</th>
+                    <th className="p-3 text-right">Moderation Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-emerald-900/60">
+                  {customersList.map((c) => (
+                    <tr key={c.id} className="hover:bg-emerald-950/40">
+                      <td className="p-3 font-bold text-white">{c.name}</td>
+                      <td className="p-3">{c.phone || c.email}</td>
+                      <td className="p-3">{c.university || 'General Public'}</td>
+                      <td className="p-3 font-bold text-white">{c.order_count}</td>
+                      <td className="p-3 font-bold text-amber-400">GH₵ {Number(c.total_spent || 0).toLocaleString()}</td>
+                      <td className="p-3">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            c.status === 'active'
+                              ? 'bg-emerald-500/20 text-emerald-300'
+                              : 'bg-red-500/20 text-red-300'
+                          }`}
+                        >
+                          {c.status}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right">
+                        <button
+                          onClick={() => handleToggleCustomerStatus(c.id, c.status)}
+                          className={`px-2.5 py-1 rounded text-[10px] font-bold transition-colors ${
+                            c.status === 'active'
+                              ? 'bg-red-950/40 text-red-300 hover:bg-red-900/50 border border-red-800/40'
+                              : 'bg-emerald-600 text-white hover:bg-emerald-500'
+                          }`}
+                        >
+                          {c.status === 'active' ? 'Suspend Account' : 'Reactivate'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

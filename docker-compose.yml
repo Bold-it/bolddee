@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  bolddee-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bolddee-rentals-app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=data/bolddee.db
+      - JWT_SECRET=${JWT_SECRET:-bolddee_prod_jwt_secret_2026_change_me}
+      - ADMIN_SECRET_KEY=${ADMIN_SECRET_KEY:-bolddee2026}
+      - PAYSTACK_SECRET_KEY=${PAYSTACK_SECRET_KEY}
+      - PAYSTACK_PUBLIC_KEY=${PAYSTACK_PUBLIC_KEY}
+      - PAYSTACK_WEBHOOK_SECRET=${PAYSTACK_WEBHOOK_SECRET}
+      - WHATSAPP_PHONE=233546996210
+    volumes:
+      # Persist SQLite database and daily hot snapshots across container restarts
+      - bolddee-data:/app/data
+
+volumes:
+  bolddee-data:
+    name: bolddee_production_data
