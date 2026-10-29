@@ -43,9 +43,11 @@ export function calculateOrderPricing(items = [], deliveryZone = 'ZONE_A', coupo
       const endDate = new Date(details.endDate || Date.now());
       const days = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
 
-      // Multi-day tiered rate per unit
-      const tieredRatePerUnit = calculateTieredRentalTotal(unitPrice, days);
-      const equipmentTotal = tieredRatePerUnit * quantity;
+      // Multi-day rental calculation: standard is unitPrice * quantity * days;
+      // or calculateTieredRentalTotal if tieredPricing is specifically enabled
+      const equipmentTotal = details.tieredPricing
+        ? calculateTieredRentalTotal(unitPrice, days) * quantity
+        : unitPrice * quantity * days;
 
       // Optional Operator / Engineer Add-on per day
       const operatorDailyRate = Number(details.operatorDailyRate || 0);
@@ -60,8 +62,8 @@ export function calculateOrderPricing(items = [], deliveryZone = 'ZONE_A', coupo
       const depositPerUnit = (product?.deposit || details.deposit || 0);
       itemDepositPesewas = Math.round(depositPerUnit * 100) * quantity;
 
-      // Check for heavy haulage threshold (canopies, stages, or >40 chairs)
-      if (quantity >= 40 || (product?.name && /canopy|tent|truss|stage|generator/i.test(product.name))) {
+      // Check for heavy haulage threshold (large bulk >= 40 or explicit heavy haulage flag)
+      if (quantity >= 40 || details.heavyHaulage || details.requiresHaulage) {
         hasHeavyBulk = true;
       }
     } else {
