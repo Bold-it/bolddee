@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, Sparkles, Tent, Award, Camera, Check } from 'lucide-react';
+import { Search, Filter, Sparkles, Tent, Award, Camera, Check, Calendar, ShieldCheck, Clock, RefreshCw } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { useProducts } from '../context/ProductsContext';
 
@@ -12,6 +12,13 @@ export const Shop = ({ onOpenCustomizer, onOpenRental }) => {
   const [selectedCategory, setSelectedCategory] = useState(
     searchParams.get('category') || 'all'
   );
+
+  // Live Event Date Filter
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const dayAfter = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const [filterStartDate, setFilterStartDate] = useState(tomorrow);
+  const [filterEndDate, setFilterEndDate] = useState(dayAfter);
+  const [isDateFilterActive, setIsDateFilterActive] = useState(false);
 
   useEffect(() => {
     const categoryParam = searchParams.get('category');
@@ -100,6 +107,62 @@ export const Shop = ({ onOpenCustomizer, onOpenRental }) => {
             ))}
           </div>
         </div>
+
+        {/* Real-Time Event Date & Stock Availability Checker Bar */}
+        {(selectedCategory === 'all' || selectedCategory === 'BOLDDEE RENTALS' || selectedCategory === 'BOLDDEE EVENTS') && (
+          <div className="glass-panel p-4 mb-8 border border-emerald-800/60 rounded-xl bg-[#072416]/70 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-amber-400/20 text-amber-400 border border-amber-400/30">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-white block">Real-Time Rental Date & Stock Availability</span>
+                <span className="text-[11px] text-emerald-300/80">
+                  Select your event dates to check real-time warehouse inventory and guard against date conflicts.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <div className="flex items-center gap-2 bg-[#03150c] border border-emerald-800/80 rounded-lg px-2.5 py-1.5">
+                <span className="text-[10px] uppercase font-bold text-emerald-400">From:</span>
+                <input
+                  type="date"
+                  value={filterStartDate}
+                  min={tomorrow}
+                  onChange={(e) => {
+                    setFilterStartDate(e.target.value);
+                    setIsDateFilterActive(true);
+                  }}
+                  className="bg-transparent text-white text-xs focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 bg-[#03150c] border border-emerald-800/80 rounded-lg px-2.5 py-1.5">
+                <span className="text-[10px] uppercase font-bold text-emerald-400">To:</span>
+                <input
+                  type="date"
+                  value={filterEndDate}
+                  min={filterStartDate}
+                  onChange={(e) => {
+                    setFilterEndDate(e.target.value);
+                    setIsDateFilterActive(true);
+                  }}
+                  className="bg-transparent text-white text-xs focus:outline-none"
+                />
+              </div>
+
+              {isDateFilterActive && (
+                <button
+                  onClick={() => setIsDateFilterActive(false)}
+                  className="text-xs text-red-400 hover:text-red-300 font-semibold px-2 py-1"
+                >
+                  Clear Dates
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (

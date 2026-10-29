@@ -41,12 +41,28 @@ export const Navbar = ({ onOpenOrderTracker, onOpenQuoteModal, onOpenBulkModal }
             >
               Shop
             </Link>
+            <Link
+              to="/how-it-works"
+              className={`text-sm font-semibold transition-colors ${
+                isActive('/how-it-works') ? 'text-amber-400' : 'text-emerald-100 hover:text-amber-400'
+              }`}
+            >
+              How It Works
+            </Link>
+            <Link
+              to="/about"
+              className={`text-sm font-semibold transition-colors ${
+                isActive('/about') ? 'text-amber-400' : 'text-emerald-100 hover:text-amber-400'
+              }`}
+            >
+              About Us
+            </Link>
             {onOpenBulkModal && (
               <button
                 onClick={onOpenBulkModal}
                 className="text-sm font-semibold text-emerald-100 hover:text-amber-400 transition-colors"
               >
-                Class Bulk Orders
+                Bulk Orders
               </button>
             )}
             {onOpenQuoteModal && (
@@ -55,7 +71,7 @@ export const Navbar = ({ onOpenOrderTracker, onOpenQuoteModal, onOpenBulkModal }
                 className="text-sm font-semibold text-emerald-100 hover:text-amber-400 transition-colors flex items-center gap-1.5"
               >
                 <FileText className="h-4 w-4 text-amber-400" />
-                Request Quote
+                Quote
               </button>
             )}
             {onOpenOrderTracker && (
@@ -121,6 +137,24 @@ export const Navbar = ({ onOpenOrderTracker, onOpenQuoteModal, onOpenBulkModal }
               onClick={() => setIsMenuOpen(false)}
             >
               Shop Catalog
+            </Link>
+            <Link
+              to="/how-it-works"
+              className={`block px-3 py-2 rounded-lg text-base font-semibold ${
+                isActive('/how-it-works') ? 'text-amber-400 bg-emerald-900/30' : 'text-emerald-100 hover:text-amber-400'
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              How It Works
+            </Link>
+            <Link
+              to="/about"
+              className={`block px-3 py-2 rounded-lg text-base font-semibold ${
+                isActive('/about') ? 'text-amber-400 bg-emerald-900/30' : 'text-emerald-100 hover:text-amber-400'
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              About Us
             </Link>
             {onOpenBulkModal && (
               <button

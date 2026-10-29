@@ -1,0 +1,36 @@
+name: BOLDDEE CI / CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-build:
+    name: Run Test Suite & Build Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Execute Automated Integration & Concurrency Test Suite
+        run: node tests/testSuite.js
+
+      - name: Verify Database Hot Backup Utility
+        run: |
+          node server/db/backup.js backup
+          node server/db/backup.js list
+
+      - name: Build Production Frontend Bundle
+        run: npm run build

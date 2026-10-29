@@ -1,0 +1,18 @@
+# BOLDDEE RENTALS - robots.txt
+# Production configuration for Ghanaian event rental & print platform
+
+User-agent: *
+Allow: /
+Allow: /shop
+Allow: /about
+Allow: /how-it-works
+Allow: /faqs
+Allow: /legal
+
+# Disallow customer cart and administrative routes
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /cart
+Disallow: /api/
+
+Sitemap: https://rentals.bolddee.com/sitemap.xml

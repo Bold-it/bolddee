@@ -16,6 +16,10 @@ import Shop from './pages/Shop';
 import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
 import Contact from './pages/Contact';
+import About from './pages/About';
+import HowItWorks from './pages/HowItWorks';
+import Faqs from './pages/Faqs';
+import Legal from './pages/Legal';
 import Admin from './pages/Admin';
 import AdminLogin from './pages/AdminLogin';
 import NotFound from './pages/NotFound';
@@ -133,6 +137,49 @@ function AppContent() {
             }
           />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/faqs" element={<Faqs />} />
+          <Route path="/terms" element={<Legal />} />
+          <Route path="/rental-terms" element={<Legal />} />
+          <Route path="/privacy-policy" element={<Legal />} />
+          <Route path="/refund-policy" element={<Legal />} />
+          <Route
+            path="/rentals"
+            element={
+              <Shop
+                onOpenCustomizer={handleOpenCustomizer}
+                onOpenRental={handleOpenRental}
+              />
+            }
+          />
+          <Route
+            path="/grad"
+            element={
+              <Shop
+                onOpenCustomizer={handleOpenCustomizer}
+                onOpenRental={handleOpenRental}
+              />
+            }
+          />
+          <Route
+            path="/moments"
+            element={
+              <Shop
+                onOpenCustomizer={handleOpenCustomizer}
+                onOpenRental={handleOpenRental}
+              />
+            }
+          />
+          <Route
+            path="/events"
+            element={
+              <Shop
+                onOpenCustomizer={handleOpenCustomizer}
+                onOpenRental={handleOpenRental}
+              />
+            }
+          />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />

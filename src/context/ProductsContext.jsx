@@ -14,7 +14,6 @@ export const ProductsProvider = ({ children }) => {
     } catch (e) {
       console.error(e);
     }
-    // Default initial products with featured flag
     return INITIAL_PRODUCTS.map((p, idx) => ({
       ...p,
       featured: p.featured ?? (idx < 6),
@@ -23,15 +22,32 @@ export const ProductsProvider = ({ children }) => {
     }));
   });
 
-  useEffect(() => {
+  // Fetch real product catalogue from backend API
+  const refreshProducts = async () => {
     try {
-      localStorage.setItem('bolddee_products', JSON.stringify(products));
-    } catch (e) {
-      console.error(e);
+      const res = await fetch('/api/products');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+          localStorage.setItem('bolddee_products', JSON.stringify(data.products));
+        }
+      }
+    } catch (err) {
+      console.warn('Backend API offline or unreachable, using local cache:', err.message);
     }
-  }, [products]);
+  };
 
-  const addProduct = (newProduct) => {
+  useEffect(() => {
+    refreshProducts();
+  }, []);
+
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('bolddee_admin_token') || localStorage.getItem('bolddee_user_token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  const addProduct = async (newProduct) => {
     const created = {
       ...newProduct,
       id: `p-${Date.now()}`,
@@ -42,39 +58,60 @@ export const ProductsProvider = ({ children }) => {
       in_stock: true,
       featured: newProduct.featured || false,
     };
+
     setProducts((prev) => [created, ...prev]);
+
+    try {
+      await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify(newProduct)
+      });
+      refreshProducts();
+    } catch (err) {
+      console.error('Failed to save to backend API:', err);
+    }
+
     return created;
   };
 
-  const updateProduct = (id, updatedFields) => {
+  const updateProduct = async (id, updatedFields) => {
     setProducts((prev) =>
-      prev.map((p) => {
-        if (p.id === id) {
-          const updated = { ...p, ...updatedFields };
-          if (updatedFields.image_urls && updatedFields.image_urls.length > 0) {
-            updated.image = updatedFields.image_urls[0];
-          }
-          return updated;
-        }
-        return p;
-      })
+      prev.map((p) => (p.id === id ? { ...p, ...updatedFields } : p))
     );
+
+    try {
+      await fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify(updatedFields)
+      });
+      refreshProducts();
+    } catch (err) {
+      console.error('Failed to update in backend API:', err);
+    }
   };
 
-  const deleteProduct = (id) => {
+  const deleteProduct = async (id) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
+    try {
+      await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+        headers: { ...getAuthHeader() }
+      });
+    } catch (err) {
+      console.error('Failed to delete in backend API:', err);
+    }
   };
 
   const toggleFeatured = (id) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, featured: !p.featured } : p))
-    );
+    const p = products.find((prod) => prod.id === id);
+    if (p) updateProduct(id, { featured: !p.featured });
   };
 
   const toggleInStock = (id) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, in_stock: !p.in_stock } : p))
-    );
+    const p = products.find((prod) => prod.id === id);
+    if (p) updateProduct(id, { in_stock: !p.in_stock });
   };
 
   const resetToDefault = () => {
@@ -98,6 +135,7 @@ export const ProductsProvider = ({ children }) => {
         toggleFeatured,
         toggleInStock,
         resetToDefault,
+        refreshProducts,
       }}
     >
       {children}

@@ -8,26 +8,37 @@ export const AdminLogin = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    setTimeout(() => {
-      // Allow 'bolddee2026', 'admin', 'pass', or any reasonable password
-      if (
-        secret.toLowerCase() === 'bolddee2026' ||
-        secret.toLowerCase() === 'admin' ||
-        secret === '123456'
-      ) {
-        localStorage.setItem('bolddee_admin_session', 'authenticated');
-        if (onLoginSuccess) onLoginSuccess();
-        navigate('/admin');
-      } else {
-        setError('Invalid admin secret. Use "bolddee2026" or "admin".');
-        setLoading(false);
+    try {
+      const res = await fetch('/api/auth/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Authentication failed');
       }
-    }, 400);
+
+      localStorage.setItem('bolddee_admin_session', 'authenticated');
+      if (data.token) {
+        localStorage.setItem('bolddee_admin_token', data.token);
+      }
+      if (data.user) {
+        localStorage.setItem('bolddee_admin_user', JSON.stringify(data.user));
+      }
+
+      if (onLoginSuccess) onLoginSuccess();
+      navigate('/admin');
+    } catch (err) {
+      setError(err.message || 'Invalid admin credentials');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -12,6 +12,10 @@ export const CartProvider = ({ children }) => {
     }
   });
 
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [deliveryZone, setDeliveryZone] = useState('ZONE_A');
+
   useEffect(() => {
     try {
       localStorage.setItem('bolddee_cart', JSON.stringify(items));
@@ -40,7 +44,7 @@ export const CartProvider = ({ children }) => {
         {
           ...product,
           cartKey,
-          quantity,
+          quantity: Math.max(1, quantity),
           customization,
           rentalDetails,
         },
@@ -69,16 +73,97 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => {
     setItems([]);
+    setAppliedCoupon(null);
+    setCouponCode('');
   };
 
-  const total = items.reduce((acc, item) => {
-    if (item.rentalDetails?.grandTotal) {
-      return acc + item.rentalDetails.grandTotal * (item.quantity || 1);
-    }
-    return acc + (Number(item.price) || 0) * (item.quantity || 1);
-  }, 0);
+  // Tiered Multi-Day Helper (Day 1: 100%, Day 2: 75%, Day 3+: 60%)
+  const calculateTieredRate = (unitPrice, days) => {
+    if (days <= 1) return unitPrice;
+    if (days === 2) return unitPrice * 1.75;
+    return unitPrice * 1.75 + (days - 2) * (unitPrice * 0.60);
+  };
 
+  // Financial calculation with tiered pricing and heavy haulage detection
+  let subtotal = 0;
+  let securityDeposit = 0;
+  let setupFee = 0;
+  let hasHeavyBulk = false;
+
+  for (const item of items) {
+    const qty = Math.max(1, item.quantity || 1);
+    const unitPrice = Number(item.price) || 0;
+
+    if (item.rentalDetails) {
+      const days = Math.max(1, parseInt(item.rentalDetails.days) || 1);
+      const tieredPerUnit = calculateTieredRate(unitPrice, days);
+      const equipmentTotal = tieredPerUnit * qty;
+
+      const operatorDailyRate = Number(item.rentalDetails.operatorDailyRate || 0);
+      const operatorTotal = operatorDailyRate * days;
+
+      const itemSetup = Number(item.rentalDetails.setupFee || 0);
+      setupFee += itemSetup;
+
+      const depositPerUnit = Number(item.deposit || item.rentalDetails.deposit || 0);
+      const depositCharge = depositPerUnit * qty;
+
+      subtotal += equipmentTotal + operatorTotal;
+      securityDeposit += depositCharge;
+
+      if (qty >= 40 || (item.name && /canopy|tent|truss|stage|generator/i.test(item.name))) {
+        hasHeavyBulk = true;
+      }
+    } else {
+      subtotal += unitPrice * qty;
+    }
+  }
+
+  // Logistics & Delivery zone fee
+  let deliveryFee = 50; // Zone A
+  if (deliveryZone === 'ZONE_B') deliveryFee = 100;
+  if (deliveryZone === 'ZONE_C') deliveryFee = 150;
+
+  // Heavy Haulage Surcharge (+GH₵ 50 if heavy bulk is present)
+  let heavyHaulageFee = hasHeavyBulk ? 50 : 0;
+  let totalLogisticsFee = deliveryFee + heavyHaulageFee;
+
+  // Coupon discount calculation
+  let discount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.discount_type === 'percent') {
+      discount = Math.round((subtotal * appliedCoupon.discount_value) / 100);
+    } else {
+      discount = Math.min(subtotal, appliedCoupon.discount_value);
+    }
+  }
+
+  const grandTotal = Math.max(0, subtotal - discount + totalLogisticsFee + setupFee + securityDeposit);
+  const requiredDeposit60 = Math.round(grandTotal * 0.60);
+  const balanceDue = grandTotal - requiredDeposit60;
   const itemCount = items.reduce((acc, item) => acc + (item.quantity || 1), 0);
+
+  const applyCoupon = (code) => {
+    const clean = (code || '').trim().toUpperCase();
+    if (clean === 'GRAD2027') {
+      const coupon = { code: 'GRAD2027', discount_type: 'percent', discount_value: 10, label: '10% Off Graduation' };
+      setAppliedCoupon(coupon);
+      setCouponCode(clean);
+      return { success: true, message: 'Coupon GRAD2027 applied (10% Off)' };
+    }
+    if (clean === 'BOLD50') {
+      const coupon = { code: 'BOLD50', discount_type: 'fixed', discount_value: 50, label: 'GH₵ 50 Off' };
+      setAppliedCoupon(coupon);
+      setCouponCode(clean);
+      return { success: true, message: 'Coupon BOLD50 applied (GH₵ 50 Off)' };
+    }
+    return { success: false, message: 'Invalid or expired promo code' };
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+  };
 
   return (
     <CartContext.Provider
@@ -88,8 +173,23 @@ export const CartProvider = ({ children }) => {
         removeItem,
         updateQuantity,
         clearCart,
-        total,
+        subtotal,
+        deliveryFee,
+        setupFee,
+        heavyHaulageFee,
+        hasHeavyBulk,
+        securityDeposit,
+        discount,
+        total: grandTotal,
+        requiredDeposit60,
+        balanceDue,
         itemCount,
+        deliveryZone,
+        setDeliveryZone,
+        couponCode,
+        appliedCoupon,
+        applyCoupon,
+        removeCoupon
       }}
     >
       {children}
