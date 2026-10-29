@@ -10,14 +10,27 @@ import { db } from '../db/database.js';
  * @param {string} couponCode - Optional coupon code
  * @returns {object} Financial breakdown with exact pesewas and display values
  */
+/**
+ * Calculates tiered duration pricing for multi-day rentals.
+ * Day 1: 100%
+ * Day 2: 75% (25% off)
+ * Day 3+: 60% (40% off)
+ */
+export function calculateTieredRentalTotal(unitPrice, days) {
+  if (days <= 1) return unitPrice;
+  if (days === 2) return unitPrice * 1.75;
+  return unitPrice * 1.75 + (days - 2) * (unitPrice * 0.60);
+}
+
 export function calculateOrderPricing(items = [], deliveryZone = 'ZONE_A', couponCode = null) {
   let subtotalPesewas = 0;
   let securityDepositPesewas = 0;
   let setupFeePesewas = 0;
+  let hasHeavyBulk = false;
 
   // 1. Process each item from database truth (never trusting client prices)
   const processedItems = items.map((item) => {
-    const product = db.prepare('SELECT id, name, price, is_rental, deposit FROM products WHERE id = ?').get(item.product_id || item.id);
+    const product = db.prepare('SELECT id, name, price, is_rental, deposit, pillar FROM products WHERE id = ?').get(item.product_id || item.id);
     const unitPrice = product ? product.price : (Number(item.price) || 0);
     const quantity = Math.max(1, parseInt(item.quantity) || 1);
 
@@ -30,12 +43,27 @@ export function calculateOrderPricing(items = [], deliveryZone = 'ZONE_A', coupo
       const endDate = new Date(details.endDate || Date.now());
       const days = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
 
-      // Correct formula: unitPrice * quantity * days
-      const unitPesewas = Math.round(unitPrice * 100);
-      itemTotalPesewas = unitPesewas * quantity * days;
+      // Multi-day tiered rate per unit
+      const tieredRatePerUnit = calculateTieredRentalTotal(unitPrice, days);
+      const equipmentTotal = tieredRatePerUnit * quantity;
+
+      // Optional Operator / Engineer Add-on per day
+      const operatorDailyRate = Number(details.operatorDailyRate || 0);
+      const operatorTotal = operatorDailyRate * days;
+
+      // Setup and teardown fee
+      const itemSetupFee = Number(details.setupFee || 0);
+      setupFeePesewas += Math.round(itemSetupFee * 100);
+
+      itemTotalPesewas = Math.round((equipmentTotal + operatorTotal) * 100);
 
       const depositPerUnit = (product?.deposit || details.deposit || 0);
       itemDepositPesewas = Math.round(depositPerUnit * 100) * quantity;
+
+      // Check for heavy haulage threshold (canopies, stages, or >40 chairs)
+      if (quantity >= 40 || (product?.name && /canopy|tent|truss|stage|generator/i.test(product.name))) {
+        hasHeavyBulk = true;
+      }
     } else {
       const unitPesewas = Math.round(unitPrice * 100);
       itemTotalPesewas = unitPesewas * quantity;
@@ -57,10 +85,15 @@ export function calculateOrderPricing(items = [], deliveryZone = 'ZONE_A', coupo
     };
   });
 
-  // 2. Delivery Zone Fee (FR-016)
+  // 2. Logistics & Delivery Zone Fee (FR-016)
   let deliveryFeePesewas = 5000; // Default Zone A: GH₵ 50.00
   if (deliveryZone === 'ZONE_B') deliveryFeePesewas = 10000; // GH₵ 100.00
   if (deliveryZone === 'ZONE_C') deliveryFeePesewas = 15000; // GH₵ 150.00
+
+  // Bulk / Heavy Equipment Truck Haulage Surcharge (+GH₵ 50 if heavy bulk is present)
+  if (hasHeavyBulk) {
+    deliveryFeePesewas += 5000;
+  }
 
   // 3. Coupon Discount (FR-040)
   let discountPesewas = 0;

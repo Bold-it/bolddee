@@ -11,21 +11,38 @@ const router = express.Router();
 // Helper to generate sequential order numbers (§26: format BD-YYYY-XXXXX)
 function generateOrderNumber() {
   const year = new Date().getFullYear();
-  const lastOrder = db.prepare(`
+
+  // Find all existing order numbers for this year to determine next sequence
+  const rows = db.prepare(`
     SELECT order_number FROM orders
     WHERE order_number LIKE ?
-    ORDER BY created_at DESC LIMIT 1
-  `).get(`BD-${year}-%`);
+  `).all(`BD-${year}-%`);
 
-  let nextSeq = 1;
-  if (lastOrder && lastOrder.order_number) {
-    const parts = lastOrder.order_number.split('-');
-    const lastSeq = parseInt(parts[2], 10);
-    if (!isNaN(lastSeq)) nextSeq = lastSeq + 1;
+  let maxSeq = 0;
+  for (const r of rows) {
+    if (r.order_number) {
+      const parts = r.order_number.split('-');
+      if (parts.length >= 3) {
+        const seq = parseInt(parts[2], 10);
+        // Exclude test sentinel values (>= 90000) so real customer orders start cleanly at 00001
+        if (!isNaN(seq) && seq < 90000) {
+          maxSeq = Math.max(maxSeq, seq);
+        }
+      }
+    }
   }
 
-  const paddedSeq = String(nextSeq).padStart(5, '0');
-  return `BD-${year}-${paddedSeq}`;
+  let nextSeq = maxSeq + 1;
+
+  // Collision guarantee loop: verify candidate never collides with any existing row
+  while (true) {
+    const candidate = `BD-${year}-${String(nextSeq).padStart(5, '0')}`;
+    const exists = db.prepare('SELECT 1 FROM orders WHERE order_number = ?').get(candidate);
+    if (!exists) {
+      return candidate;
+    }
+    nextSeq++;
+  }
 }
 
 /**
@@ -64,10 +81,7 @@ router.post('/', (req, res) => {
       const orderId = `ord-${Date.now()}`;
       const orderNumber = generateOrderNumber();
 
-      // 2. Atomically reserve rental inventory holds (BR-009)
-      reserveRentalInventory(orderId, pricing.processedItems);
-
-      // 3. Set Balance payment deadline (48 hours before delivery / event date)
+      // 2. Set Balance payment deadline (48 hours before delivery / event date)
       let balanceDeadline = null;
       if (deliveryDate || eventDate) {
         const targetDate = new Date(deliveryDate || eventDate);
@@ -75,7 +89,7 @@ router.post('/', (req, res) => {
         balanceDeadline = targetDate.toISOString();
       }
 
-      // 4. Create Order record
+      // 3. Create Order record first (satisfies foreign key for rental_reservations and order_items)
       db.prepare(`
         INSERT INTO orders (
           id, order_number, user_id, customer_name, email, phone,
@@ -97,6 +111,9 @@ router.post('/', (req, res) => {
         eventDate || null, deliveryDate || null,
         deliveryLocation, deliveryZone, ambassadorCode || null, notes || null
       );
+
+      // 4. Atomically reserve rental inventory holds (BR-009)
+      reserveRentalInventory(orderId, pricing.processedItems);
 
       // 5. Insert Order Items
       const insertItem = db.prepare(`

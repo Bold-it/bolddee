@@ -23,6 +23,8 @@ export default function CheckoutModal({ cartItems, onClose, clearCart, setRecent
   const {
     subtotal,
     deliveryFee,
+    setupFee,
+    heavyHaulageFee,
     securityDeposit,
     discount,
     total,
@@ -374,17 +376,34 @@ export default function CheckoutModal({ cartItems, onClose, clearCart, setRecent
                   <span>- GH₵ {discount.toLocaleString()}</span>
                 </div>
               )}
+              {setupFee > 0 && (
+                <div className="flex justify-between text-emerald-200">
+                  <span>Canopy & Staging Setup Crew Fee:</span>
+                  <span className="font-bold text-white">GH₵ {setupFee.toLocaleString()}</span>
+                </div>
+              )}
               <div className="flex justify-between text-emerald-200">
-                <span>Logistics & Delivery ({deliveryZone}):</span>
+                <span>Logistics & Venue Delivery ({deliveryZone}):</span>
                 <span className="font-bold text-white">GH₵ {deliveryFee}</span>
               </div>
+              {heavyHaulageFee > 0 && (
+                <div className="flex justify-between text-cyan-300">
+                  <span>Heavy Equipment Bulk Haulage (Truck):</span>
+                  <span className="font-bold text-cyan-300">GH₵ {heavyHaulageFee}</span>
+                </div>
+              )}
               {securityDeposit > 0 && (
-                <div className="flex justify-between text-emerald-200">
-                  <span className="flex items-center gap-1">
-                    Refundable Security Deposit (Escrow):
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                  </span>
-                  <span className="font-bold text-amber-300">GH₵ {securityDeposit.toLocaleString()}</span>
+                <div className="pt-1 border-t border-emerald-900/60">
+                  <div className="flex justify-between text-amber-300 font-semibold">
+                    <span className="flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                      Refundable Security Deposit (Escrow):
+                    </span>
+                    <span>GH₵ {securityDeposit.toLocaleString()}</span>
+                  </div>
+                  <p className="text-[10px] text-emerald-400/80 mt-0.5">
+                    * 100% released and credited back to your MoMo wallet within 24h post-event after inspection.
+                  </p>
                 </div>
               )}
               <div className="pt-2 border-t border-emerald-900/60 flex justify-between text-sm font-black text-white">

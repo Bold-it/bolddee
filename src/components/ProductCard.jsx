@@ -10,6 +10,7 @@ export const ProductCard = ({ product, onOpenCustomizer, onOpenRental }) => {
     id,
     name,
     price,
+    original_price,
     unit = 'piece',
     pillar,
     category,
@@ -115,10 +116,15 @@ export const ProductCard = ({ product, onOpenCustomizer, onOpenRental }) => {
           </Link>
 
           {/* Pricing */}
-          <div className="pt-1 flex items-baseline gap-1.5">
+          <div className="pt-1 flex items-baseline gap-2 flex-wrap">
             <span className="text-2xl font-black text-amber-400">
               GH₵{Number(price).toLocaleString()}
             </span>
+            {Number(original_price) > Number(price) && (
+              <span className="text-xs text-emerald-400/50 line-through">
+                GH₵{Number(original_price).toLocaleString()}
+              </span>
+            )}
             <span className="text-xs text-emerald-300/70">
               / {unit}
             </span>

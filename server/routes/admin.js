@@ -209,4 +209,50 @@ router.post('/inspections', requireRole(['super_admin', 'admin', 'operations_man
   res.status(201).json({ message: 'Return inspection recorded and deposit settled' });
 });
 
+/**
+ * GET /api/admin/deposits (Escrow & Security Deposits List)
+ */
+router.get('/deposits', requireRole(['super_admin', 'admin', 'finance_officer', 'operations_manager']), (req, res) => {
+  const deposits = db.prepare(`
+    SELECT sd.*, o.order_number, o.customer_name, o.phone, o.email, o.event_date
+    FROM security_deposits sd
+    JOIN orders o ON sd.order_id = o.id
+    ORDER BY sd.created_at DESC
+  `).all();
+  res.json({ deposits });
+});
+
+/**
+ * POST /api/admin/deposits/:orderId/release (Settle / Refund Escrow Deposit)
+ */
+router.post('/deposits/:orderId/release', requireRole(['super_admin', 'admin', 'finance_officer']), (req, res) => {
+  const { orderId } = req.params;
+  const { deduction = 0, reason = 'Equipment inspected - return passed in pristine condition' } = req.body;
+
+  const deposit = db.prepare('SELECT * FROM security_deposits WHERE order_id = ?').get(orderId);
+  if (!deposit) return res.status(404).json({ error: 'Security deposit record not found for this order' });
+
+  const numDeduction = parseFloat(deduction) || 0;
+  const refundAmount = Math.max(0, deposit.total_deposit - numDeduction);
+  const status = numDeduction > 0 ? 'Partially Deducted' : 'Refunded';
+
+  db.prepare(`
+    UPDATE security_deposits
+    SET deducted_amount = ?, refunded_amount = ?, status = ?, deduction_reasons = ?, settled_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(numDeduction, refundAmount, status, reason, deposit.id);
+
+  db.prepare(`
+    INSERT INTO order_events (id, order_id, event_type, description, actor_name)
+    VALUES (?, ?, 'deposit_settled', ?, ?)
+  `).run(
+    `evt-${Date.now()}`,
+    orderId,
+    `Security deposit settled. Refunded: GH₵ ${refundAmount}. Deductions: GH₵ ${numDeduction}. Reason: ${reason}`,
+    req.user.name
+  );
+
+  res.json({ message: 'Security deposit settled successfully', refundAmount, status });
+});
+
 export default router;

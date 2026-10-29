@@ -77,9 +77,18 @@ export const CartProvider = ({ children }) => {
     setCouponCode('');
   };
 
-  // Fixed financial calculation (eliminates double-multiplication bug)
+  // Tiered Multi-Day Helper (Day 1: 100%, Day 2: 75%, Day 3+: 60%)
+  const calculateTieredRate = (unitPrice, days) => {
+    if (days <= 1) return unitPrice;
+    if (days === 2) return unitPrice * 1.75;
+    return unitPrice * 1.75 + (days - 2) * (unitPrice * 0.60);
+  };
+
+  // Financial calculation with tiered pricing and heavy haulage detection
   let subtotal = 0;
   let securityDeposit = 0;
+  let setupFee = 0;
+  let hasHeavyBulk = false;
 
   for (const item of items) {
     const qty = Math.max(1, item.quantity || 1);
@@ -87,21 +96,37 @@ export const CartProvider = ({ children }) => {
 
     if (item.rentalDetails) {
       const days = Math.max(1, parseInt(item.rentalDetails.days) || 1);
-      const rentalCharge = unitPrice * qty * days;
+      const tieredPerUnit = calculateTieredRate(unitPrice, days);
+      const equipmentTotal = tieredPerUnit * qty;
+
+      const operatorDailyRate = Number(item.rentalDetails.operatorDailyRate || 0);
+      const operatorTotal = operatorDailyRate * days;
+
+      const itemSetup = Number(item.rentalDetails.setupFee || 0);
+      setupFee += itemSetup;
+
       const depositPerUnit = Number(item.deposit || item.rentalDetails.deposit || 0);
       const depositCharge = depositPerUnit * qty;
 
-      subtotal += rentalCharge;
+      subtotal += equipmentTotal + operatorTotal;
       securityDeposit += depositCharge;
+
+      if (qty >= 40 || (item.name && /canopy|tent|truss|stage|generator/i.test(item.name))) {
+        hasHeavyBulk = true;
+      }
     } else {
       subtotal += unitPrice * qty;
     }
   }
 
-  // Delivery zone fee
+  // Logistics & Delivery zone fee
   let deliveryFee = 50; // Zone A
   if (deliveryZone === 'ZONE_B') deliveryFee = 100;
   if (deliveryZone === 'ZONE_C') deliveryFee = 150;
+
+  // Heavy Haulage Surcharge (+GH₵ 50 if heavy bulk is present)
+  let heavyHaulageFee = hasHeavyBulk ? 50 : 0;
+  let totalLogisticsFee = deliveryFee + heavyHaulageFee;
 
   // Coupon discount calculation
   let discount = 0;
@@ -113,7 +138,7 @@ export const CartProvider = ({ children }) => {
     }
   }
 
-  const grandTotal = Math.max(0, subtotal - discount + deliveryFee + securityDeposit);
+  const grandTotal = Math.max(0, subtotal - discount + totalLogisticsFee + setupFee + securityDeposit);
   const requiredDeposit60 = Math.round(grandTotal * 0.60);
   const balanceDue = grandTotal - requiredDeposit60;
   const itemCount = items.reduce((acc, item) => acc + (item.quantity || 1), 0);
@@ -150,6 +175,9 @@ export const CartProvider = ({ children }) => {
         clearCart,
         subtotal,
         deliveryFee,
+        setupFee,
+        heavyHaulageFee,
+        hasHeavyBulk,
         securityDeposit,
         discount,
         total: grandTotal,

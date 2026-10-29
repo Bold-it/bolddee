@@ -12,9 +12,9 @@ router.get('/', (req, res) => {
   const { pillar, category, search, featured, in_stock } = req.query;
 
   let sql = `
-    SELECT id, sku, name, description, price, category, pillar, unit,
+    SELECT id, sku, name, description, price, original_price, cost_price, category, pillar, unit,
            stock_quantity, min_order_qty, featured, in_stock, image, image_urls,
-           is_customizable, is_rental, is_service, deposit, asset_prefix,
+           is_customizable, is_rental, is_service, deposit, asset_prefix, badge, inclusions, variants,
            rating, reviews_count
     FROM products
     WHERE status = 'active'
@@ -66,9 +66,9 @@ router.get('/', (req, res) => {
  */
 router.get('/:id', (req, res) => {
   const r = db.prepare(`
-    SELECT id, sku, name, description, price, category, pillar, unit,
+    SELECT id, sku, name, description, price, original_price, cost_price, category, pillar, unit,
            stock_quantity, min_order_qty, featured, in_stock, image, image_urls,
-           is_customizable, is_rental, is_service, deposit, asset_prefix,
+           is_customizable, is_rental, is_service, deposit, asset_prefix, badge, inclusions, variants,
            rating, reviews_count
     FROM products
     WHERE id = ?
@@ -94,9 +94,9 @@ router.get('/:id', (req, res) => {
  */
 router.post('/', authenticate, requireRole(['super_admin', 'admin', 'inventory_officer']), (req, res) => {
   const {
-    name, description, price, cost_price, category, pillar, unit,
-    stock_quantity, featured, in_stock, image, image_urls,
-    is_customizable, is_rental, is_service, deposit, asset_prefix
+    name, description, price, original_price, cost_price, category, pillar, unit,
+    stock_quantity, min_order_qty, featured, in_stock, image, image_urls,
+    is_customizable, is_rental, is_service, deposit, asset_prefix, badge, inclusions, variants
   } = req.body;
 
   if (!name || !price) {
@@ -110,18 +110,34 @@ router.post('/', authenticate, requireRole(['super_admin', 'admin', 'inventory_o
 
   db.prepare(`
     INSERT INTO products (
-      id, sku, name, description, price, cost_price, category, pillar, unit,
-      stock_quantity, featured, in_stock, image, image_urls,
-      is_customizable, is_rental, is_service, deposit, asset_prefix
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      id, sku, name, description, price, original_price, cost_price, category, pillar, unit,
+      stock_quantity, min_order_qty, featured, in_stock, image, image_urls,
+      is_customizable, is_rental, is_service, deposit, asset_prefix, badge, inclusions, variants
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id, sku, name, description || '', parseFloat(price) || 0,
-    parseFloat(cost_price) || 0, category || 'General', pillar || 'BOLDDEE GRAD',
-    unit || 'piece', parseInt(stock_quantity) || 100, featured ? 1 : 0,
-    in_stock !== false ? 1 : 0, finalImage, urlsJson,
+    parseFloat(original_price) || 0, parseFloat(cost_price) || 0,
+    category || 'General', pillar || 'BOLDDEE GRAD',
+    unit || 'piece', parseInt(stock_quantity) || 100, parseInt(min_order_qty) || 1,
+    featured ? 1 : 0, in_stock !== false ? 1 : 0,
+    finalImage, urlsJson,
     is_customizable ? 1 : 0, is_rental ? 1 : 0, is_service ? 1 : 0,
-    parseFloat(deposit) || 0, asset_prefix || null
+    parseFloat(deposit) || 0, asset_prefix || null,
+    badge || null, inclusions || null, typeof variants === 'object' ? JSON.stringify(variants) : (variants || null)
   );
+
+  // If this is a rental with an asset prefix, auto-register warehouse tracking units
+  if (is_rental && asset_prefix) {
+    const qtyToSeed = Math.min(parseInt(stock_quantity) || 10, 20);
+    const insertAsset = db.prepare(`
+      INSERT OR IGNORE INTO rental_assets (id, asset_code, product_id, name, category, status)
+      VALUES (?, ?, ?, ?, ?, 'Available')
+    `);
+    for (let i = 1; i <= qtyToSeed; i++) {
+      const code = `${asset_prefix.toUpperCase()}-${String(i).padStart(3, '0')}`;
+      insertAsset.run(`ra-${id}-${i}`, code, id, `${name} (Unit ${i})`, category || 'Rental');
+    }
+  }
 
   res.status(201).json({ message: 'Product created successfully', id, sku });
 });
@@ -144,29 +160,38 @@ router.put('/:id', authenticate, requireRole(['super_admin', 'admin', 'inventory
       name = COALESCE(?, name),
       description = COALESCE(?, description),
       price = COALESCE(?, price),
+      original_price = COALESCE(?, original_price),
       cost_price = COALESCE(?, cost_price),
       category = COALESCE(?, category),
       pillar = COALESCE(?, pillar),
       unit = COALESCE(?, unit),
       stock_quantity = COALESCE(?, stock_quantity),
+      min_order_qty = COALESCE(?, min_order_qty),
       featured = COALESCE(?, featured),
       in_stock = COALESCE(?, in_stock),
       image = COALESCE(?, image),
       image_urls = COALESCE(?, image_urls),
       is_customizable = COALESCE(?, is_customizable),
       is_rental = COALESCE(?, is_rental),
+      is_service = COALESCE(?, is_service),
       deposit = COALESCE(?, deposit),
+      asset_prefix = COALESCE(?, asset_prefix),
+      badge = COALESCE(?, badge),
+      inclusions = COALESCE(?, inclusions),
+      variants = COALESCE(?, variants),
       updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `).run(
-    updates.name, updates.description, updates.price, updates.cost_price,
-    updates.category, updates.pillar, updates.unit, updates.stock_quantity,
+    updates.name, updates.description, updates.price, updates.original_price, updates.cost_price,
+    updates.category, updates.pillar, updates.unit, updates.stock_quantity, updates.min_order_qty,
     updates.featured !== undefined ? (updates.featured ? 1 : 0) : null,
     updates.in_stock !== undefined ? (updates.in_stock ? 1 : 0) : null,
     finalImage, urlsJson,
     updates.is_customizable !== undefined ? (updates.is_customizable ? 1 : 0) : null,
     updates.is_rental !== undefined ? (updates.is_rental ? 1 : 0) : null,
-    updates.deposit,
+    updates.is_service !== undefined ? (updates.is_service ? 1 : 0) : null,
+    updates.deposit, updates.asset_prefix, updates.badge, updates.inclusions,
+    typeof updates.variants === 'object' ? JSON.stringify(updates.variants) : updates.variants,
     id
   );
 

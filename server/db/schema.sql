@@ -72,6 +72,10 @@ CREATE TABLE IF NOT EXISTS products (
   is_service INTEGER DEFAULT 0,
   deposit REAL DEFAULT 0,            -- Security deposit per unit for rentals
   asset_prefix TEXT,                 -- e.g. 'TENT', 'CHR', 'TBL'
+  badge TEXT,                        -- e.g. 'BEST SELLER', 'POPULAR', 'NEW 2026'
+  original_price REAL DEFAULT 0,     -- Strikethrough comparison price
+  inclusions TEXT,                   -- JSON or newline string of package inclusions
+  variants TEXT,                     -- JSON array of size/color options
   rating REAL DEFAULT 5.0,
   reviews_count INTEGER DEFAULT 0,
   status TEXT DEFAULT 'active',
